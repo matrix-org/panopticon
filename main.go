@@ -15,10 +15,8 @@ import (
 )
 
 var (
-	dbPath   = flag.String("db", "stats.db", "Path to sqlite3 database")
-	port     = flag.Int("port", 9001, "Port on which to serve HTTPS")
-	certFile = flag.String("cert_file", "tls.crt", "Path to SSL cert")
-	keyFile  = flag.String("key_file", "tls.key", "Path to SSL key")
+	dbPath = flag.String("db", "stats.db", "Path to sqlite3 database")
+	port   = flag.Int("port", 9001, "Port on which to serve HTTP")
 )
 
 type StatsReport struct {
@@ -47,8 +45,8 @@ func main() {
 	r := &Recorder{db}
 
 	http.HandleFunc("/push", r.Handle)
-	http.HandleFunc("/healthz", serveText("ok"))
-	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%d", *port), *certFile, *keyFile, nil))
+	http.HandleFunc("/test", serveText("ok"))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
 
 type Recorder struct {
@@ -60,12 +58,12 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 	var sr StatsReport
 	if err := dec.Decode(&sr); err != nil {
-		logAndReplyError(w, err)
+		logAndReplyError(w, err, 400, "Error decoding JSON")
 		return
 	}
 	sr.LocalTimestamp = time.Now().UTC().Unix()
 	if err := r.Save(sr); err != nil {
-		logAndReplyError(w, err)
+		logAndReplyError(w, err, 500, "Error saving to DB")
 		return
 	}
 	io.WriteString(w, "{}")
@@ -92,10 +90,10 @@ func (r *Recorder) Save(sr StatsReport) error {
 	return err
 }
 
-func logAndReplyError(w http.ResponseWriter, err error) {
-	log.Printf("Error reading JSON: %v", err)
-	w.WriteHeader(500)
-	io.WriteString(w, `{"errcode": "unable to process request"}`)
+func logAndReplyError(w http.ResponseWriter, err error, code int, description string) {
+	log.Printf("%s: %v", description, err)
+	w.WriteHeader(code)
+	io.WriteString(w, `{"error_message": "unable to process request"}`)
 }
 
 func serveText(s string) func(http.ResponseWriter, *http.Request) {
