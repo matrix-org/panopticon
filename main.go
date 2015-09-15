@@ -27,6 +27,7 @@ type StatsReport struct {
 	TotalRoomCount   int64 `json:"total_room_count"`
 	DailyActiveUsers int64 `json:"daily_active_users"`
 	DailyMessages    int64 `json:"daily_messages"`
+	RemoteAddr       string
 }
 
 func main() {
@@ -62,6 +63,7 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	sr.LocalTimestamp = time.Now().UTC().Unix()
+	sr.RemoteAddr = req.RemoteAddr
 	if err := r.Save(sr); err != nil {
 		logAndReplyError(w, err, 500, "Error saving to DB")
 		return
@@ -74,14 +76,16 @@ func (r *Recorder) Save(sr StatsReport) error {
 			homeserver,
 			local_timestamp,
 			remote_timestamp,
+			remote_addr,
 			total_users,
 			total_room_count,
 			daily_active_users,
 			daily_messages
-		) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		sr.Homeserver,
 		sr.LocalTimestamp,
 		sr.RemoteTimestamp,
+		sr.RemoteAddr,
 		sr.TotalUsers,
 		sr.TotalRoomCount,
 		sr.DailyActiveUsers,
@@ -108,6 +112,7 @@ func createTable(db *sql.DB) error {
 		homeserver VARCHAR(256),
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
+		remote_addr TEXT,
 		total_users BIGINT,
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
