@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -21,12 +22,13 @@ var (
 
 type StatsReport struct {
 	Homeserver       string
-	LocalTimestamp   int64 // Seconds since epoch, UTC
-	RemoteTimestamp  int64 `json:"timestamp"` // Seconds since epoch, UTC
-	TotalUsers       int64 `json:"total_users"`
-	TotalRoomCount   int64 `json:"total_room_count"`
-	DailyActiveUsers int64 `json:"daily_active_users"`
-	DailyMessages    int64 `json:"daily_messages"`
+	LocalTimestamp   int64  // Seconds since epoch, UTC
+	RemoteTimestamp  *int64 `json:"timestamp"` // Seconds since epoch, UTC
+	UptimeSeconds    *int64 `json:"uptime_seconds"`
+	TotalUsers       *int64 `json:"total_users"`
+	TotalRoomCount   *int64 `json:"total_room_count"`
+	DailyActiveUsers *int64 `json:"daily_active_users"`
+	DailyMessages    *int64 `json:"daily_messages"`
 	RemoteAddr       string
 }
 
@@ -72,24 +74,41 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Recorder) Save(sr StatsReport) error {
+	cols := []string{"homeserver", "local_timestamp", "remote_addr"}
+	vals := []interface{}{sr.Homeserver, sr.LocalTimestamp, sr.RemoteAddr}
+	if sr.RemoteTimestamp != nil {
+		cols = append(cols, "remote_timestamp")
+		vals = append(vals, *sr.RemoteTimestamp)
+	}
+	if sr.UptimeSeconds != nil {
+		cols = append(cols, "uptime_seconds")
+		vals = append(vals, *sr.UptimeSeconds)
+	}
+	if sr.TotalUsers != nil {
+		cols = append(cols, "total_users")
+		vals = append(vals, *sr.TotalUsers)
+	}
+	if sr.TotalRoomCount != nil {
+		cols = append(cols, "total_room_count")
+		vals = append(vals, *sr.TotalRoomCount)
+	}
+	if sr.DailyActiveUsers != nil {
+		cols = append(cols, "daily_active_users")
+		vals = append(vals, *sr.DailyActiveUsers)
+	}
+	if sr.DailyMessages != nil {
+		cols = append(cols, "daily_messages")
+		vals = append(vals, *sr.DailyMessages)
+	}
+
+	var valuePlaceholders []string
+	for i := range vals {
+		valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+	}
 	_, err := r.DB.Exec(`INSERT INTO stats (
-			homeserver,
-			local_timestamp,
-			remote_timestamp,
-			remote_addr,
-			total_users,
-			total_room_count,
-			daily_active_users,
-			daily_messages
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		sr.Homeserver,
-		sr.LocalTimestamp,
-		sr.RemoteTimestamp,
-		sr.RemoteAddr,
-		sr.TotalUsers,
-		sr.TotalRoomCount,
-		sr.DailyActiveUsers,
-		sr.DailyMessages,
+			`+strings.Join(cols, ", ")+`
+		) VALUES (`+strings.Join(valuePlaceholders, ", ")+`)`,
+		vals...,
 	)
 	return err
 }
@@ -113,6 +132,7 @@ func createTable(db *sql.DB) error {
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
 		remote_addr TEXT,
+		uptime_seconds BIGINT,
 		total_users BIGINT,
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
