@@ -76,30 +76,13 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 func (r *Recorder) Save(sr StatsReport) error {
 	cols := []string{"homeserver", "local_timestamp", "remote_addr"}
 	vals := []interface{}{sr.Homeserver, sr.LocalTimestamp, sr.RemoteAddr}
-	if sr.RemoteTimestamp != nil {
-		cols = append(cols, "remote_timestamp")
-		vals = append(vals, *sr.RemoteTimestamp)
-	}
-	if sr.UptimeSeconds != nil {
-		cols = append(cols, "uptime_seconds")
-		vals = append(vals, *sr.UptimeSeconds)
-	}
-	if sr.TotalUsers != nil {
-		cols = append(cols, "total_users")
-		vals = append(vals, *sr.TotalUsers)
-	}
-	if sr.TotalRoomCount != nil {
-		cols = append(cols, "total_room_count")
-		vals = append(vals, *sr.TotalRoomCount)
-	}
-	if sr.DailyActiveUsers != nil {
-		cols = append(cols, "daily_active_users")
-		vals = append(vals, *sr.DailyActiveUsers)
-	}
-	if sr.DailyMessages != nil {
-		cols = append(cols, "daily_messages")
-		vals = append(vals, *sr.DailyMessages)
-	}
+
+	cols, vals = appendIfNonNil(cols, vals, "remote_timestamp", sr.RemoteTimestamp)
+	cols, vals = appendIfNonNil(cols, vals, "uptime_seconds", sr.UptimeSeconds)
+	cols, vals = appendIfNonNil(cols, vals, "total_users", sr.TotalUsers)
+	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.TotalRoomCount)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.DailyActiveUsers)
+	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -111,6 +94,14 @@ func (r *Recorder) Save(sr StatsReport) error {
 		vals...,
 	)
 	return err
+}
+
+func appendIfNonNil(cols []string, vals []interface{}, name string, value *int64) ([]string, []interface{}) {
+	if value != nil {
+		cols = append(cols, name)
+		vals = append(vals, value)
+	}
+	return cols, vals
 }
 
 func logAndReplyError(w http.ResponseWriter, err error, code int, description string) {
