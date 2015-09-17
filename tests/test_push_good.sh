@@ -19,3 +19,9 @@ assert_eq "10
 
 assert_eq "{}" "$(curl -k -d '{"homeserver": "few.turtles"}' http://localhost:${port}/push 2>/dev/null)"
 assert_eq "|||||" "$(sqlite3 ${dir}/stats.db 'SELECT daily_active_users, total_users, total_room_count, daily_messages, remote_timestamp, uptime_seconds FROM stats WHERE homeserver == "few.turtles"')"
+
+assert_eq "{}" "$(curl -k -H "X-Forwarded-For: faraway.turtles" -d '{"homeserver": "proxied.turtles"}' http://localhost:${port}/push 2>/dev/null)"
+assert_eq "faraway.turtles" "$(sqlite3 ${dir}/stats.db 'SELECT forwarded_for FROM stats WHERE homeserver == "proxied.turtles"')"
+
+assert_eq "{}" "$(curl -k -H "x-forwarded-for: lower.faraway.turtles" -d '{"homeserver": "lower.proxied.turtles"}' http://localhost:${port}/push 2>/dev/null)"
+assert_eq "lower.faraway.turtles" "$(sqlite3 ${dir}/stats.db 'SELECT forwarded_for FROM stats WHERE homeserver == "lower.proxied.turtles"')"
