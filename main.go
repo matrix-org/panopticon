@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -21,12 +22,13 @@ var (
 
 type StatsReport struct {
 	Homeserver       string
-	LocalTimestamp   int64 // Seconds since epoch, UTC
-	RemoteTimestamp  int64 `json:"timestamp"` // Seconds since epoch, UTC
-	TotalUsers       int64 `json:"total_users"`
-	TotalRoomCount   int64 `json:"total_room_count"`
-	DailyActiveUsers int64 `json:"daily_active_users"`
-	DailyMessages    int64 `json:"daily_messages"`
+	LocalTimestamp   int64  // Seconds since epoch, UTC
+	RemoteTimestamp  *int64 `json:"timestamp"` // Seconds since epoch, UTC
+	UptimeSeconds    *int64 `json:"uptime_seconds"`
+	TotalUsers       *int64 `json:"total_users"`
+	TotalRoomCount   *int64 `json:"total_room_count"`
+	DailyActiveUsers *int64 `json:"daily_active_users"`
+	DailyMessages    *int64 `json:"daily_messages"`
 	RemoteAddr       string
 }
 
@@ -72,26 +74,34 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Recorder) Save(sr StatsReport) error {
+	cols := []string{"homeserver", "local_timestamp", "remote_addr"}
+	vals := []interface{}{sr.Homeserver, sr.LocalTimestamp, sr.RemoteAddr}
+
+	cols, vals = appendIfNonNil(cols, vals, "remote_timestamp", sr.RemoteTimestamp)
+	cols, vals = appendIfNonNil(cols, vals, "uptime_seconds", sr.UptimeSeconds)
+	cols, vals = appendIfNonNil(cols, vals, "total_users", sr.TotalUsers)
+	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.TotalRoomCount)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.DailyActiveUsers)
+	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
+
+	var valuePlaceholders []string
+	for i := range vals {
+		valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+	}
 	_, err := r.DB.Exec(`INSERT INTO stats (
-			homeserver,
-			local_timestamp,
-			remote_timestamp,
-			remote_addr,
-			total_users,
-			total_room_count,
-			daily_active_users,
-			daily_messages
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-		sr.Homeserver,
-		sr.LocalTimestamp,
-		sr.RemoteTimestamp,
-		sr.RemoteAddr,
-		sr.TotalUsers,
-		sr.TotalRoomCount,
-		sr.DailyActiveUsers,
-		sr.DailyMessages,
+			`+strings.Join(cols, ", ")+`
+		) VALUES (`+strings.Join(valuePlaceholders, ", ")+`)`,
+		vals...,
 	)
 	return err
+}
+
+func appendIfNonNil(cols []string, vals []interface{}, name string, value *int64) ([]string, []interface{}) {
+	if value != nil {
+		cols = append(cols, name)
+		vals = append(vals, value)
+	}
+	return cols, vals
 }
 
 func logAndReplyError(w http.ResponseWriter, err error, code int, description string) {
@@ -113,6 +123,7 @@ func createTable(db *sql.DB) error {
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
 		remote_addr TEXT,
+		uptime_seconds BIGINT,
 		total_users BIGINT,
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
