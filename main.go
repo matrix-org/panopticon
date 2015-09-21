@@ -30,6 +30,7 @@ type StatsReport struct {
 	DailyActiveUsers *int64 `json:"daily_active_users"`
 	DailyMessages    *int64 `json:"daily_messages"`
 	RemoteAddr       string
+	XForwardedFor    string
 }
 
 func main() {
@@ -66,6 +67,7 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 	}
 	sr.LocalTimestamp = time.Now().UTC().Unix()
 	sr.RemoteAddr = req.RemoteAddr
+	sr.XForwardedFor = req.Header.Get("X-Forwarded-For")
 	if err := r.Save(sr); err != nil {
 		logAndReplyError(w, err, 500, "Error saving to DB")
 		return
@@ -83,6 +85,10 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.TotalRoomCount)
 	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.DailyActiveUsers)
 	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
+	if sr.XForwardedFor != "" {
+		cols = append(cols, "forwarded_for")
+		vals = append(vals, sr.XForwardedFor)
+	}
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -123,6 +129,7 @@ func createTable(db *sql.DB) error {
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
 		remote_addr TEXT,
+		forwarded_for TEXT,
 		uptime_seconds BIGINT,
 		total_users BIGINT,
 		total_room_count BIGINT,
