@@ -31,6 +31,7 @@ type StatsReport struct {
 	DailyMessages    *int64 `json:"daily_messages"`
 	RemoteAddr       string
 	XForwardedFor    string
+	UserAgent        string
 }
 
 func main() {
@@ -68,6 +69,7 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 	sr.LocalTimestamp = time.Now().UTC().Unix()
 	sr.RemoteAddr = req.RemoteAddr
 	sr.XForwardedFor = req.Header.Get("X-Forwarded-For")
+	sr.UserAgent = req.Header.Get("User-Agent")
 	if err := r.Save(sr); err != nil {
 		logAndReplyError(w, err, 500, "Error saving to DB")
 		return
@@ -85,10 +87,8 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.TotalRoomCount)
 	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.DailyActiveUsers)
 	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
-	if sr.XForwardedFor != "" {
-		cols = append(cols, "forwarded_for")
-		vals = append(vals, sr.XForwardedFor)
-	}
+	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
+	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -104,6 +104,14 @@ func (r *Recorder) Save(sr StatsReport) error {
 
 func appendIfNonNil(cols []string, vals []interface{}, name string, value *int64) ([]string, []interface{}) {
 	if value != nil {
+		cols = append(cols, name)
+		vals = append(vals, value)
+	}
+	return cols, vals
+}
+
+func appendIfNonEmpty(cols []string, vals []interface{}, name string, value string) ([]string, []interface{}) {
+	if value != "" {
 		cols = append(cols, name)
 		vals = append(vals, value)
 	}
@@ -134,7 +142,8 @@ func createTable(db *sql.DB) error {
 		total_users BIGINT,
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
-		daily_messages BIGINT
+		daily_messages BIGINT,
+		user_agent STRING
 		)`)
 	return err
 }
