@@ -25,3 +25,6 @@ assert_eq "faraway.turtles" "$(sqlite3 ${dir}/stats.db 'SELECT forwarded_for FRO
 
 assert_eq "{}" "$(curl -k -H "x-forwarded-for: lower.faraway.turtles" -d '{"homeserver": "lower.proxied.turtles"}' http://localhost:${port}/push 2>/dev/null)"
 assert_eq "lower.faraway.turtles" "$(sqlite3 ${dir}/stats.db 'SELECT forwarded_for FROM stats WHERE homeserver == "lower.proxied.turtles"')"
+
+assert_eq "{}" "$(curl -k -H "User-Agent: turtle/agent/0.0.7" -d '{"homeserver": "agent.turtles"}' http://localhost:${port}/push 2>/dev/null)"
+assert_eq "turtle/agent/0.0.7" "$(sqlite3 ${dir}/stats.db 'SELECT user_agent FROM stats WHERE homeserver == "agent.turtles"')"
