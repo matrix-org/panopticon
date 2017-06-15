@@ -94,7 +94,11 @@ func (r *Recorder) Save(sr StatsReport) error {
 
 	var valuePlaceholders []string
 	for i := range vals {
-		valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+		if *dbDriver == "mysql" {
+			valuePlaceholders = append(valuePlaceholders, "?")
+		} else {
+			valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+		}
 	}
 	_, err := r.DB.Exec(`INSERT INTO stats (
 			`+strings.Join(cols, ", ")+`
