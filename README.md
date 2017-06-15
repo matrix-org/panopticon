@@ -4,9 +4,17 @@ panopticon records usage metrics from homeservers
 ## Building
 To build panopticon, you need a working go installation.
 To install dependencies, run:
- `go get github.com/mattn/go-sqlite3`
+
+```sh
+go get github.com/mattn/go-sqlite3
+go get github.com/go-sql-driver/mysql
+```
+
 To build, run:
- `go build`
+
+```sh
+go build
+```
 
 ## Testing
 To run tests, run `./runtests.sh`
