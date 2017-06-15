@@ -12,12 +12,14 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
-	dbPath = flag.String("db", "stats.db", "Path to sqlite3 database")
-	port   = flag.Int("port", 9001, "Port on which to serve HTTP")
+	dbDriver = flag.String("db-driver", "sqlite3", "the database driver to use")
+	dbPath   = flag.String("db", "stats.db", "the data source to use, for sqlite this is the path to the file")
+	port     = flag.Int("port", 9001, "Port on which to serve HTTP")
 )
 
 type StatsReport struct {
@@ -37,7 +39,7 @@ type StatsReport struct {
 func main() {
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", *dbPath)
+	db, err := sql.Open(*dbDriver, *dbPath)
 	if err != nil {
 		log.Fatalf("Could not open database: %v", err)
 	}
@@ -92,7 +94,11 @@ func (r *Recorder) Save(sr StatsReport) error {
 
 	var valuePlaceholders []string
 	for i := range vals {
-		valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+		if *dbDriver == "mysql" {
+			valuePlaceholders = append(valuePlaceholders, "?")
+		} else {
+			valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+		}
 	}
 	_, err := r.DB.Exec(`INSERT INTO stats (
 			`+strings.Join(cols, ", ")+`
@@ -131,8 +137,12 @@ func serveText(s string) func(http.ResponseWriter, *http.Request) {
 }
 
 func createTable(db *sql.DB) error {
+	autoincrement := "AUTOINCREMENT"
+	if *dbDriver == "mysql" {
+		autoincrement = "AUTO_INCREMENT"
+	}
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS stats(
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		id INTEGER NOT NULL PRIMARY KEY ` + autoincrement + ` ,
 		homeserver VARCHAR(256),
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
@@ -143,7 +153,7 @@ func createTable(db *sql.DB) error {
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
 		daily_messages BIGINT,
-		user_agent STRING
+		user_agent TEXT
 		)`)
 	return err
 }
