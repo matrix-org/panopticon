@@ -12,12 +12,14 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
-	dbPath = flag.String("db", "stats.db", "Path to sqlite3 database")
-	port   = flag.Int("port", 9001, "Port on which to serve HTTP")
+	dbDriver = flag.String("db-driver", "sqlite3", "the database driver to use")
+	dbPath   = flag.String("db", "stats.db", "the data source to use, for sqlite this is the path to the file")
+	port     = flag.Int("port", 9001, "Port on which to serve HTTP")
 )
 
 type StatsReport struct {
@@ -37,7 +39,7 @@ type StatsReport struct {
 func main() {
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", *dbPath)
+	db, err := sql.Open(*dbDriver, *dbPath)
 	if err != nil {
 		log.Fatalf("Could not open database: %v", err)
 	}
