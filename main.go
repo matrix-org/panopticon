@@ -133,8 +133,12 @@ func serveText(s string) func(http.ResponseWriter, *http.Request) {
 }
 
 func createTable(db *sql.DB) error {
+	autoincrement := "AUTOINCREMENT"
+	if *dbDriver == "mysql" {
+		autoincrement = "AUTO_INCREMENT"
+	}
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS stats(
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		id INTEGER NOT NULL PRIMARY KEY ` + autoincrement + ` ,
 		homeserver VARCHAR(256),
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
@@ -145,7 +149,7 @@ func createTable(db *sql.DB) error {
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
 		daily_messages BIGINT,
-		user_agent STRING
+		user_agent TEXT
 		)`)
 	return err
 }
