@@ -23,17 +23,20 @@ var (
 )
 
 type StatsReport struct {
-	Homeserver       string
-	LocalTimestamp   int64  // Seconds since epoch, UTC
-	RemoteTimestamp  *int64 `json:"timestamp"` // Seconds since epoch, UTC
-	UptimeSeconds    *int64 `json:"uptime_seconds"`
-	TotalUsers       *int64 `json:"total_users"`
-	TotalRoomCount   *int64 `json:"total_room_count"`
-	DailyActiveUsers *int64 `json:"daily_active_users"`
-	DailyMessages    *int64 `json:"daily_messages"`
-	RemoteAddr       string
-	XForwardedFor    string
-	UserAgent        string
+	Homeserver           string
+	LocalTimestamp       int64  // Seconds since epoch, UTC
+	RemoteTimestamp      *int64 `json:"timestamp"` // Seconds since epoch, UTC
+	UptimeSeconds        *int64 `json:"uptime_seconds"`
+	TotalUsers           *int64 `json:"total_users"`
+	TotalNonBridgedUsers *int64 `json:"total_nonbridged_users"`
+	TotalRoomCount       *int64 `json:"total_room_count"`
+	DailyActiveUsers     *int64 `json:"daily_active_users"`
+	DailyMessages        *int64 `json:"daily_messages"`
+	DailySentMessages    *int64 `json:"daily_sent_messages"`
+	DailyActiveRooms     *int64 `json:"daily_active_rooms"`
+	RemoteAddr           string
+	XForwardedFor        string
+	UserAgent            string
 }
 
 func main() {
@@ -86,9 +89,12 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "remote_timestamp", sr.RemoteTimestamp)
 	cols, vals = appendIfNonNil(cols, vals, "uptime_seconds", sr.UptimeSeconds)
 	cols, vals = appendIfNonNil(cols, vals, "total_users", sr.TotalUsers)
+	cols, vals = appendIfNonNil(cols, vals, "total_nonbridged_users", sr.TotalNonBridgedUsers)
 	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.TotalRoomCount)
 	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.DailyActiveUsers)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_rooms", sr.DailyActiveRooms)
 	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
+	cols, vals = appendIfNonNil(cols, vals, "daily_sent_messages", sr.DailySentMessages)
 	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
 	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
 
@@ -150,9 +156,12 @@ func createTable(db *sql.DB) error {
 		forwarded_for TEXT,
 		uptime_seconds BIGINT,
 		total_users BIGINT,
+		total_nonbridged_users BIGINT,
 		total_room_count BIGINT,
 		daily_active_users BIGINT,
+		daily_active_rooms BIGINT,
 		daily_messages BIGINT,
+		daily_sent_messages BIGINT,
 		user_agent TEXT
 		)`)
 	return err
