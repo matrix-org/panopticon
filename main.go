@@ -122,7 +122,7 @@ func (r *Recorder) Save(sr StatsReport) error {
 
 	cols, vals = appendIfNonNil(cols, vals, "cpu_average", sr.CPUAverage)
 	cols, vals = appendIfNonNil(cols, vals, "memory_rss", sr.MemoryRSS)
-	cols, vals = appendIfNonNil(cols, vals, "cache_factor", sr.CacheFactor)
+	cols, vals = appendIfNonNilFloat(cols, vals, "cache_factor", sr.CacheFactor)
 	cols, vals = appendIfNonNil(cols, vals, "event_cache_size", sr.EventCacheSize)
 
 	var valuePlaceholders []string
@@ -141,6 +141,13 @@ func (r *Recorder) Save(sr StatsReport) error {
 	return err
 }
 
+func appendIfNonNilFloat(cols []string, vals []interface{}, name string, value *float64) ([]string, []interface{}) {
+	if value != nil {
+		cols = append(cols, name)
+		vals = append(vals, value)
+	}
+	return cols, vals
+}
 func appendIfNonNil(cols []string, vals []interface{}, name string, value *int64) ([]string, []interface{}) {
 	if value != nil {
 		cols = append(cols, name)
