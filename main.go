@@ -54,6 +54,7 @@ type StatsReport struct {
 	DailyActiveRooms     *int64 `json:"daily_active_rooms"`
 	MemoryRSS            *int64 `json:"memory_rss"`
 	CPUAverage           *int64 `json:"cpu_average"`
+	CacheFactor          *int64 `json:"cache_factor"`
 	RemoteAddr           string
 	XForwardedFor        string
 	UserAgent            string
@@ -120,6 +121,7 @@ func (r *Recorder) Save(sr StatsReport) error {
 
 	cols, vals = appendIfNonNil(cols, vals, "cpu_average", sr.CPUAverage)
 	cols, vals = appendIfNonNil(cols, vals, "memory_rss", sr.MemoryRSS)
+	cols, vals = appendIfNonNil(cols, vals, "cache_factor", sr.CacheFactor)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -187,6 +189,7 @@ func createTable(db *sql.DB) error {
 		daily_sent_messages BIGINT,
 		cpu_average BIGINT,
 		memory_rss BIGINT,
+		cache_factor BIGINT,
 		user_agent TEXT
 		)`)
 	return err
