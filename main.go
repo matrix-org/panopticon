@@ -54,7 +54,7 @@ type StatsReport struct {
 	DailyActiveRooms     *int64 `json:"daily_active_rooms"`
 	MemoryRSS            *int64 `json:"memory_rss"`
 	CPUAverage           *int64 `json:"cpu_average"`
-	CacheFactor          *int64 `json:"cache_factor"`
+	CacheFactor          *float64 `json:"cache_factor"`
 	EventCacheSize       *int64 `json:"event_cache_size"`
 	RemoteAddr           string
 	XForwardedFor        string
@@ -191,7 +191,7 @@ func createTable(db *sql.DB) error {
 		daily_sent_messages BIGINT,
 		cpu_average BIGINT,
 		memory_rss BIGINT,
-		cache_factor BIGINT,
+		cache_factor DOUBLE,
 		event_cache_size BIGINT,
 		user_agent TEXT
 		)`)
