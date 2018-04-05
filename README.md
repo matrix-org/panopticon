@@ -16,6 +16,12 @@ To build, run:
 go build
 ```
 
+
 ## Testing
-To run tests, run `./runtests.sh`
+There is a docker file that builds panopticon and runs the tests as above.
+
+This only requires docker on your local workstation, no go install or dependencies required.
+
+```sh
+docker-tests.sh
 To add new tests, crib exiting files in the `tests` directory.

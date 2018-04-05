@@ -24,8 +24,9 @@ port=9002
 
 cd $(dirname $(dirname $(realpath $0)))
 ./panopticon --port=${port} --db=${dir}/stats.db 2>$1 &
+PID=$! 
 function kill_server {
-  kill $(lsof -i | grep ":${port} " | awk '{print $2}')
+  kill $PID
 }
 
 trap kill_server EXIT

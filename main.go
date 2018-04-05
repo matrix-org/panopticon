@@ -52,6 +52,10 @@ type StatsReport struct {
 	DailyMessages        *int64 `json:"daily_messages"`
 	DailySentMessages    *int64 `json:"daily_sent_messages"`
 	DailyActiveRooms     *int64 `json:"daily_active_rooms"`
+	MemoryRSS            *int64 `json:"memory_rss"`
+	CPUAverage           *int64 `json:"cpu_average"`
+	CacheFactor          *float64 `json:"cache_factor"`
+	EventCacheSize       *int64 `json:"event_cache_size"`
 	RemoteAddr           string
 	XForwardedFor        string
 	UserAgent            string
@@ -116,6 +120,11 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
 	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
 
+	cols, vals = appendIfNonNil(cols, vals, "cpu_average", sr.CPUAverage)
+	cols, vals = appendIfNonNil(cols, vals, "memory_rss", sr.MemoryRSS)
+	cols, vals = appendIfNonNilFloat(cols, vals, "cache_factor", sr.CacheFactor)
+	cols, vals = appendIfNonNil(cols, vals, "event_cache_size", sr.EventCacheSize)
+
 	var valuePlaceholders []string
 	for i := range vals {
 		if *dbDriver == "mysql" {
@@ -132,6 +141,13 @@ func (r *Recorder) Save(sr StatsReport) error {
 	return err
 }
 
+func appendIfNonNilFloat(cols []string, vals []interface{}, name string, value *float64) ([]string, []interface{}) {
+	if value != nil {
+		cols = append(cols, name)
+		vals = append(vals, value)
+	}
+	return cols, vals
+}
 func appendIfNonNil(cols []string, vals []interface{}, name string, value *int64) ([]string, []interface{}) {
 	if value != nil {
 		cols = append(cols, name)
@@ -180,6 +196,10 @@ func createTable(db *sql.DB) error {
 		daily_active_rooms BIGINT,
 		daily_messages BIGINT,
 		daily_sent_messages BIGINT,
+		cpu_average BIGINT,
+		memory_rss BIGINT,
+		cache_factor DOUBLE,
+		event_cache_size BIGINT,
 		user_agent TEXT
 		)`)
 	return err
