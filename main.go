@@ -42,20 +42,25 @@ var (
 
 type StatsReport struct {
 	Homeserver           string
-	LocalTimestamp       int64  // Seconds since epoch, UTC
-	RemoteTimestamp      *int64 `json:"timestamp"` // Seconds since epoch, UTC
-	UptimeSeconds        *int64 `json:"uptime_seconds"`
-	TotalUsers           *int64 `json:"total_users"`
-	TotalNonBridgedUsers *int64 `json:"total_nonbridged_users"`
-	TotalRoomCount       *int64 `json:"total_room_count"`
-	DailyActiveUsers     *int64 `json:"daily_active_users"`
-	DailyMessages        *int64 `json:"daily_messages"`
-	DailySentMessages    *int64 `json:"daily_sent_messages"`
-	DailyActiveRooms     *int64 `json:"daily_active_rooms"`
-	MemoryRSS            *int64 `json:"memory_rss"`
-	CPUAverage           *int64 `json:"cpu_average"`
+	LocalTimestamp       int64    // Seconds since epoch, UTC
+	RemoteTimestamp      *int64   `json:"timestamp"` // Seconds since epoch, UTC
+	UptimeSeconds        *int64   `json:"uptime_seconds"`
+	TotalUsers           *int64   `json:"total_users"`
+	TotalNonBridgedUsers *int64   `json:"total_nonbridged_users"`
+	TotalRoomCount       *int64   `json:"total_room_count"`
+	DailyActiveUsers     *int64   `json:"daily_active_users"`
+	DailyMessages        *int64   `json:"daily_messages"`
+	DailySentMessages    *int64   `json:"daily_sent_messages"`
+	DailyActiveRooms     *int64   `json:"daily_active_rooms"`
+	R30UsersAll          *int64   `json:"r30_users_all"`
+	R30UsersAndroid      *int64   `json:"r30_users_android"`
+	R30UsersIOS          *int64   `json:"r30_users_ios"`
+	R30UsersElectron     *int64   `json:"r30_users_electron"`
+	R30UsersWeb          *int64   `json:"r30_users_web"`
+	MemoryRSS            *int64   `json:"memory_rss"`
+	CPUAverage           *int64   `json:"cpu_average"`
 	CacheFactor          *float64 `json:"cache_factor"`
-	EventCacheSize       *int64 `json:"event_cache_size"`
+	EventCacheSize       *int64   `json:"event_cache_size"`
 	RemoteAddr           string
 	XForwardedFor        string
 	UserAgent            string
@@ -117,6 +122,13 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "daily_active_rooms", sr.DailyActiveRooms)
 	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
 	cols, vals = appendIfNonNil(cols, vals, "daily_sent_messages", sr.DailySentMessages)
+
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_all", sr.R30UsersAll)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_android", sr.R30UsersAndroid)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_ios", sr.R30UsersIOS)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_electron", sr.R30UsersElectron)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_web", sr.R30UsersWeb)
+
 	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
 	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
 
@@ -196,6 +208,11 @@ func createTable(db *sql.DB) error {
 		daily_active_rooms BIGINT,
 		daily_messages BIGINT,
 		daily_sent_messages BIGINT,
+		r30_users_all BIGINT,
+		r30_users_android BIGINT,
+		r30_users_ios BIGINT,
+		r30_users_electron BIGINT,
+		r30_users_web BIGINT,
 		cpu_average BIGINT,
 		memory_rss BIGINT,
 		cache_factor DOUBLE,
