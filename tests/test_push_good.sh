@@ -2,8 +2,8 @@
 
 . $(dirname $0)/setup.sh
 log "Testing /push with beyond 0.27.2 pushes"
-assert_eq "{}" "$(curl -k -d '{"daily_active_users": 10, "timestamp": 20, "total_users": 123, "total_room_count": 17, "daily_messages": 9, "uptime_seconds": 19, "homeserver": "many.turtles", "memory_rss": 12, "cpu_average": 125, "cache_factor": 5.501, "event_cache_size": 10000}' http://localhost:${port}/push 2>/dev/null)"
-assert_eq "10|123|17|9|20|19|125|12|5.501|10000" "$(sqlite3 ${dir}/stats.db 'SELECT daily_active_users, total_users, total_room_count, daily_messages, remote_timestamp, uptime_seconds, cpu_average, memory_rss, cache_factor, event_cache_size FROM stats WHERE homeserver == "many.turtles"')"
+assert_eq "{}" "$(curl -k -d '{"daily_active_users": 10, "timestamp": 20, "total_users": 123, "total_room_count": 17, "daily_messages": 9, "uptime_seconds": 19, "r30_users_all": 5, "r30_users_android": 4, "r30_users_ios": 3, "r30_users_electron": 2, "r30_users_web": 1, "homeserver": "many.turtles", "memory_rss": 12, "cpu_average": 125, "cache_factor": 5.501, "event_cache_size": 10000}' http://localhost:${port}/push 2>/dev/null)"
+assert_eq "10|123|17|9|20|19|5|4|3|2|1|125|12|5.501|10000" "$(sqlite3 ${dir}/stats.db 'SELECT daily_active_users, total_users, total_room_count, daily_messages, remote_timestamp, uptime_seconds, r30_users_all, r30_users_android, r30_users_ios, r30_users_electron, r30_users_web, cpu_average, memory_rss, cache_factor, event_cache_size FROM stats WHERE homeserver == "many.turtles"')"
 assert_eq "1" "$(sqlite3 ${dir}/stats.db 'SELECT COUNT(*) AS count FROM stats WHERE homeserver == "many.turtles" AND (remote_addr LIKE "127.0.0.1%" OR remote_addr LIKE "[::1]%")')"
 
 sleep 2
@@ -27,4 +27,3 @@ assert_eq "lower.faraway.turtles" "$(sqlite3 ${dir}/stats.db 'SELECT forwarded_f
 
 assert_eq "{}" "$(curl -k -H "User-Agent: turtle/agent/0.0.7" -d '{"homeserver": "agent.turtles"}' http://localhost:${port}/push 2>/dev/null)"
 assert_eq "turtle/agent/0.0.7" "$(sqlite3 ${dir}/stats.db 'SELECT user_agent FROM stats WHERE homeserver == "agent.turtles"')"
-
