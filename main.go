@@ -61,6 +61,9 @@ type StatsReport struct {
 	CPUAverage           *int64   `json:"cpu_average"`
 	CacheFactor          *float64 `json:"cache_factor"`
 	EventCacheSize       *int64   `json:"event_cache_size"`
+	DailyUserTypeNative  *int64   `json:"daily_user_type_native"`
+	DailyUserTypeGuest   *int64   `json:"daily_user_type_guest"`
+	DailyUserTypeBridged *int64   `json:"daily_user_type_bridged"`
 	RemoteAddr           string
 	XForwardedFor        string
 	UserAgent            string
@@ -136,6 +139,10 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "memory_rss", sr.MemoryRSS)
 	cols, vals = appendIfNonNilFloat(cols, vals, "cache_factor", sr.CacheFactor)
 	cols, vals = appendIfNonNil(cols, vals, "event_cache_size", sr.EventCacheSize)
+
+	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_native", sr.DailyUserTypeNative)
+	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_guest", sr.DailyUserTypeGuest)
+	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_bridged", sr.DailyUserTypeBridged)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -217,7 +224,10 @@ func createTable(db *sql.DB) error {
 		memory_rss BIGINT,
 		cache_factor DOUBLE,
 		event_cache_size BIGINT,
-		user_agent TEXT
+		user_agent TEXT,
+		daily_user_type_native BIGINT,
+		daily_user_type_bridged BIGINT,
+		daily_user_type_guest BIGINT
 		)`)
 	return err
 }
