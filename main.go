@@ -64,6 +64,7 @@ type StatsReport struct {
 	DailyUserTypeNative  *int64   `json:"daily_user_type_native"`
 	DailyUserTypeGuest   *int64   `json:"daily_user_type_guest"`
 	DailyUserTypeBridged *int64   `json:"daily_user_type_bridged"`
+	PythonVersion        string   `json:"python_version"`
 	RemoteAddr           string
 	XForwardedFor        string
 	UserAgent            string
@@ -143,6 +144,8 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_native", sr.DailyUserTypeNative)
 	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_guest", sr.DailyUserTypeGuest)
 	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_bridged", sr.DailyUserTypeBridged)
+
+	cols, vals = appendIfNonEmpty(cols, vals, "python_version", sr.PythonVersion)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -227,7 +230,8 @@ func createTable(db *sql.DB) error {
 		user_agent TEXT,
 		daily_user_type_native BIGINT,
 		daily_user_type_bridged BIGINT,
-		daily_user_type_guest BIGINT
+		daily_user_type_guest BIGINT,
+		python_version TEXT,
 		)`)
 	return err
 }
