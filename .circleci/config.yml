@@ -1,0 +1,17 @@
+version: 2
+jobs:
+  tests:
+    machine: true
+    steps:
+      - checkout
+      - run: docker build . -t panopticon
+      - run: docker run -t --rm panopticon
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - tests:
+          filters:
+            branches:
+              only: /develop|master|neilj.*/
