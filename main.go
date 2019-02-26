@@ -231,7 +231,7 @@ func createTable(db *sql.DB) error {
 		daily_user_type_native BIGINT,
 		daily_user_type_bridged BIGINT,
 		daily_user_type_guest BIGINT,
-		python_version TEXT DEFAULT ‘UNKNOWN'
+		python_version TEXT
 		)`)
 
 	return err
