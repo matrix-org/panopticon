@@ -1,3 +1,3 @@
 #!/bin/bash
 docker build . -t panopticon
-docker run  --rm panopticon
+docker run -t  --rm panopticon
