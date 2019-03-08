@@ -41,33 +41,35 @@ var (
 )
 
 type StatsReport struct {
-	Homeserver           string
-	LocalTimestamp       int64    // Seconds since epoch, UTC
-	RemoteTimestamp      *int64   `json:"timestamp"` // Seconds since epoch, UTC
-	UptimeSeconds        *int64   `json:"uptime_seconds"`
-	TotalUsers           *int64   `json:"total_users"`
-	TotalNonBridgedUsers *int64   `json:"total_nonbridged_users"`
-	TotalRoomCount       *int64   `json:"total_room_count"`
-	DailyActiveUsers     *int64   `json:"daily_active_users"`
-	DailyMessages        *int64   `json:"daily_messages"`
-	DailySentMessages    *int64   `json:"daily_sent_messages"`
-	DailyActiveRooms     *int64   `json:"daily_active_rooms"`
-	R30UsersAll          *int64   `json:"r30_users_all"`
-	R30UsersAndroid      *int64   `json:"r30_users_android"`
-	R30UsersIOS          *int64   `json:"r30_users_ios"`
-	R30UsersElectron     *int64   `json:"r30_users_electron"`
-	R30UsersWeb          *int64   `json:"r30_users_web"`
-	MemoryRSS            *int64   `json:"memory_rss"`
-	CPUAverage           *int64   `json:"cpu_average"`
-	CacheFactor          *float64 `json:"cache_factor"`
-	EventCacheSize       *int64   `json:"event_cache_size"`
-	DailyUserTypeNative  *int64   `json:"daily_user_type_native"`
-	DailyUserTypeGuest   *int64   `json:"daily_user_type_guest"`
-	DailyUserTypeBridged *int64   `json:"daily_user_type_bridged"`
-	PythonVersion        string   `json:"python_version"`
-	RemoteAddr           string
-	XForwardedFor        string
-	UserAgent            string
+	Homeserver            string
+	LocalTimestamp        int64    // Seconds since epoch, UTC
+	RemoteTimestamp       *int64   `json:"timestamp"` // Seconds since epoch, UTC
+	UptimeSeconds         *int64   `json:"uptime_seconds"`
+	TotalUsers            *int64   `json:"total_users"`
+	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"`
+	TotalRoomCount        *int64   `json:"total_room_count"`
+	DailyActiveUsers      *int64   `json:"daily_active_users"`
+	DailyMessages         *int64   `json:"daily_messages"`
+	DailySentMessages     *int64   `json:"daily_sent_messages"`
+	DailyActiveRooms      *int64   `json:"daily_active_rooms"`
+	R30UsersAll           *int64   `json:"r30_users_all"`
+	R30UsersAndroid       *int64   `json:"r30_users_android"`
+	R30UsersIOS           *int64   `json:"r30_users_ios"`
+	R30UsersElectron      *int64   `json:"r30_users_electron"`
+	R30UsersWeb           *int64   `json:"r30_users_web"`
+	MemoryRSS             *int64   `json:"memory_rss"`
+	CPUAverage            *int64   `json:"cpu_average"`
+	CacheFactor           *float64 `json:"cache_factor"`
+	EventCacheSize        *int64   `json:"event_cache_size"`
+	DailyUserTypeNative   *int64   `json:"daily_user_type_native"`
+	DailyUserTypeGuest    *int64   `json:"daily_user_type_guest"`
+	DailyUserTypeBridged  *int64   `json:"daily_user_type_bridged"`
+	PythonVersion         string   `json:"python_version"`
+	DatabaseEngine        string   `json:"database_engine"`
+	DatabaseServerVersion string   `json:"database_server_version"`
+	RemoteAddr            string
+	XForwardedFor         string
+	UserAgent             string
 }
 
 func main() {
@@ -146,6 +148,8 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_bridged", sr.DailyUserTypeBridged)
 
 	cols, vals = appendIfNonEmpty(cols, vals, "python_version", sr.PythonVersion)
+	cols, vals = appendIfNonEmpty(cols, vals, "database_engine", sr.DatabaseEngine)
+	cols, vals = appendIfNonEmpty(cols, vals, "database_server_version", sr.DatabaseServerVersion)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -231,7 +235,9 @@ func createTable(db *sql.DB) error {
 		daily_user_type_native BIGINT,
 		daily_user_type_bridged BIGINT,
 		daily_user_type_guest BIGINT,
-		python_version TEXT
+		python_version TEXT,
+		database_engine TEXT,
+		database_server_version TEXT
 		)`)
 
 	return err
