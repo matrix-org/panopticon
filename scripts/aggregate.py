@@ -40,6 +40,8 @@ try:
             """
         cursor.execute(start_date_query)
         overal_start_day = cursor.fetchone()[0] + ONE_DAY
+        # overal_start_day = 1443657600
+
     today = datetime.utcnow().date()
     today_start = datetime(today.year, today.month, today.day, tzinfo=tz.tzutc())
     final_day = int(today_start.strftime('%s'))
@@ -64,7 +66,8 @@ try:
                     SUM(r30_users_web) as 'r30_users_web',
                     SUM(daily_user_type_native) as 'daily_user_type_native',
                     SUM(daily_user_type_bridged) as 'daily_user_type_bridged',
-                    SUM(daily_user_type_guest) as 'daily_user_type_guest'
+                    SUM(daily_user_type_guest) as 'daily_user_type_guest',
+                    COUNT(homeserver) as 'homeserver'
                 FROM (
                     SELECT *, MAX(local_timestamp)
                     FROM stats
@@ -96,8 +99,9 @@ try:
                         daily_user_type_native,
                         daily_user_type_bridged,
                         daily_user_type_guest,
-                        context
-                ) VALUES (%s, %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s, %s)
+                        daily_active_homservers,
+                        server_context
+                ) VALUES (%s, %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s,%s, %s, %s, %s)
             """
             insert_data = [x if x is None else int(x) for x in result]
             # insert day at the front
