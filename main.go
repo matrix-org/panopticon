@@ -241,7 +241,7 @@ func createTable(db *sql.DB) error {
 		python_version TEXT,
 		database_engine TEXT,
 		database_server_version TEXT,
-		server_context TEXT,
+		server_context TEXT
 		)`)
 
 	return err
