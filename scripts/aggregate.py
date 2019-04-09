@@ -71,7 +71,7 @@ def main():
             last_day_in_db = cursor.fetchone()[0]
 
         now = datetime.utcnow().date()
-        today = int(datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s'))
+        today = datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s')
         processing_day = last_day_in_db + ONE_DAY
 
         while processing_day < today:
@@ -150,6 +150,7 @@ def create_table(db, schema):
     cursor.execute(schema)
     cursor.execute('SET sql_notes = 1;')
     db.commit()
+
 
 if __name__ == "__main__":
     main()
