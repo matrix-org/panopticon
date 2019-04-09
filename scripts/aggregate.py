@@ -68,7 +68,12 @@ def main():
                 LIMIT 1
                 """
             cursor.execute(start_date_query)
-            last_day_in_db = cursor.fetchone()[0]
+            try:
+                last_day_in_db = cursor.fetchone()[0]
+            except:
+                # If no data to read assume is empty revert to 2015-10-01
+                # which is when the stats table is populated from.
+                last_day_in_db = 1443657600
 
         now = datetime.utcnow().date()
         today = datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s')
