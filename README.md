@@ -25,7 +25,3 @@ This only requires docker on your local workstation, no go install or dependenci
 docker-tests.sh
 ```
 To add new tests, crib exiting files in the `tests` directory.
-
-## Docker for deployment
-
-Panopticon is automatically built by docker hub into the `matrixdotorg/panopticon` repository
