@@ -9,12 +9,4 @@ COPY ./runtests.sh /go/src/panopticon
 COPY ./tests /go/src/panopticon/tests
 COPY ./main.go /go/src/panopticon
 RUN go build
-RUN ./runtests.sh
-
-FROM debian
-
-WORKDIR /root/
-COPY --from=0 /go/src/panopticon/panopticon .
-COPY ./docker-start.sh .
-CMD ["/root/docker-start.sh"]
-
+CMD ./runtests.sh

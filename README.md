@@ -16,12 +16,20 @@ To build, run:
 go build
 ```
 
-
 ## Testing
-There is a docker file that builds panopticon and runs the tests as above.
+There is a second `Dockerfile-testing` that builds panopticon to run the tests as above, as we probably want locally.
 
 This only requires docker on your local workstation, no go install or dependencies required.
 
 ```sh
 docker-tests.sh
+```
 To add new tests, crib exiting files in the `tests` directory.
+
+# Deployment using docker image
+
+Set the environment variables
+ * `PANOPTICON_DB_DRIVER` (eg, mysql or sqlite) 
+ * `PANOPTICON_DB` (go mysql connection string or filename for sqlite)
+ * `PANOPTICON_PORT` (http port to expose panopticon on)
+
