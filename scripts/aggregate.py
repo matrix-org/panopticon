@@ -4,6 +4,8 @@
 
 import pymysql.cursors
 import yaml
+import os
+
 from os.path import expanduser
 from dateutil import tz
 from datetime import datetime
@@ -11,14 +13,11 @@ from datetime import datetime
 
 class Config:
     def __init__(self):
-        with open(expanduser("~") + "/.panopticon", "r") as config_file:
-            config = yaml.safe_load(config_file)
-            self.DB_NAME = config["db_name"]
-            self.DB_USER = config["db_user"]
-            self.DB_PASSWORD = config["db_password"]
-            self.DB_HOST = config["db_host"]
-            self.DB_PORT = config["db_port"]
-
+            self.DB_NAME = os.environ["PANOPTICON_DB_NAME"]
+            self.DB_USER = os.environ["PANOPTICON_DB_USER"]
+            self.DB_PASSWORD = os.environ["PANOPTICON_DB_PASSWORD"]
+            self.DB_HOST = os.environ["PANOPTICON_DB_HOST"]
+            self.DB_PORT = os.environ["PANOPTICON_DB_PORT"]
 
 def main():
     CONFIG = Config()
