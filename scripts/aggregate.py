@@ -17,7 +17,7 @@ class Config:
             self.DB_USER = os.environ["PANOPTICON_DB_USER"]
             self.DB_PASSWORD = os.environ["PANOPTICON_DB_PASSWORD"]
             self.DB_HOST = os.environ["PANOPTICON_DB_HOST"]
-            self.DB_PORT = os.environ["PANOPTICON_DB_PORT"]
+            self.DB_PORT = int(os.environ["PANOPTICON_DB_PORT"])
 
 def main():
     CONFIG = Config()
