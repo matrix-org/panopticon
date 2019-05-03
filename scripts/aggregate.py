@@ -28,7 +28,7 @@ def main():
         passwd=CONFIG.DB_PASSWORD,
         db=CONFIG.DB_NAME,
         port=CONFIG.DB_PORT,
-        ssl={}
+        ssl={'ssl': {}}
     )
 
     ONE_DAY = 24 * 60 * 60
