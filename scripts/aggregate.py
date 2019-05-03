@@ -76,7 +76,7 @@ def main():
                 last_day_in_db = 1443657600
 
         now = datetime.utcnow().date()
-        today = datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s')
+        today = int(datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s'))
         processing_day = last_day_in_db + ONE_DAY
 
         while processing_day < today:
