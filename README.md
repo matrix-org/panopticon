@@ -28,8 +28,16 @@ To add new tests, crib exiting files in the `tests` directory.
 
 # Deployment using docker image
 
-Set the environment variables
+Set the environment variables for the go image
  * `PANOPTICON_DB_DRIVER` (eg, mysql or sqlite) 
  * `PANOPTICON_DB` (go mysql connection string or filename for sqlite)
  * `PANOPTICON_PORT` (http port to expose panopticon on)
+
+Set the environment variables for the python image
+ * `PANOPTICON_DB_NAME`
+ * `PANOPTICON_DB_USER`
+ * `PANOPTICON_DB_PASSWORD`
+ * `PANOPTICON_DB_HOST`
+ * `PANOPTICON_DB_PORT`
+
 

@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 # You almost certainly do not want to add more tests to this file
 . $(dirname $0)/setup.sh
-log "Testing /push with 0.27.2 - 0.99.1 pushes"
+log "Testing /push with 0.33.6 - 0.99.1 pushes"
 
 assert_eq "{}" "$(curl -k -d '{"daily_active_users": 10, "timestamp": 20, "total_users": 123, "total_room_count": 17, "daily_messages": 9, "uptime_seconds": 19, "r30_users_all": 5, "r30_users_android": 4, "r30_users_ios": 3, "r30_users_electron": 2, "r30_users_web": 1, "daily_user_type_native": 21,  "daily_user_type_guest": 22, "daily_user_type_bridged": 23, "homeserver": "many.turtles", "memory_rss": 12, "cpu_average": 125, "cache_factor": 5.501, "event_cache_size": 10000, "python_version":"3.6.1"}' http://localhost:${port}/push 2>/dev/null)"
 
