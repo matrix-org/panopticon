@@ -4,8 +4,8 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: docker -f Dockerfile-tests build . -t panopticon
-      - run: docker -f Dockerfile-tests run -t --rm panopticon
+      - run: docker build -f Dockerfile-tests . -t panopticon
+      - run: docker run -t --rm panopticon
 
 workflows:
   version: 2
