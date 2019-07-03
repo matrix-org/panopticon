@@ -82,6 +82,12 @@ def main():
 
         while processing_day < today:
             with db.cursor() as cursor:
+                # Need to filter on "AND total_users > 0" since some installs
+                # run with a standby unused server with an empty db. This means
+                # that picking a recent entry for a given server is likely to
+                # under report. Filtering on total_users removes the standbys.
+                # It also filters out genuinely unused servers, but the value of
+                # aggregating these servers is limited.
                 query = """
                     SELECT
                         SUM(total_users) as 'total_users',
@@ -104,6 +110,7 @@ def main():
                         SELECT *, MAX(local_timestamp)
                         FROM stats
                         WHERE local_timestamp >= %s and local_timestamp < %s
+                        AND total_users > 0
                         GROUP BY homeserver
                     ) as s;
                     """
