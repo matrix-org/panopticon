@@ -68,6 +68,7 @@ type StatsReport struct {
 	DatabaseEngine        string   `json:"database_engine"`
 	DatabaseServerVersion string   `json:"database_server_version"`
 	ServerContext         string   `json:"server_context"`
+	LogLevel              string   `json:"log_level"`
 	RemoteAddr            string
 	XForwardedFor         string
 	UserAgent             string
@@ -153,6 +154,7 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonEmpty(cols, vals, "database_server_version", sr.DatabaseServerVersion)
 
 	cols, vals = appendIfNonEmpty(cols, vals, "server_context", sr.ServerContext)
+	cols, vals = appendIfNonEmpty(cols, vals, "log_level", sr.LogLevel)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -241,7 +243,8 @@ func createTable(db *sql.DB) error {
 		python_version TEXT,
 		database_engine TEXT,
 		database_server_version TEXT,
-		server_context TEXT
+		server_context TEXT,
+		log_level TEXT
 		)`)
 
 	return err
