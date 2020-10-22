@@ -48,10 +48,11 @@ type StatsReport struct {
 	TotalUsers            *int64   `json:"total_users"` // Total users in users table
 	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"` // Total native and guest users in users table
 	TotalRoomCount        *int64   `json:"total_room_count"` // Total number of rooms on the server
-	DailyActiveUsers      *int64   `json:"daily_active_users"` // Total number of users in the users ips table seen in the last 24 hours 
+	DailyActiveUsers      *int64   `json:"daily_active_users"` // Total number of users in the users ips table seen in the last 24 hours
 	DailyMessages         *int64   `json:"daily_messages"` // Total number of m.room.message in events table in the past 24 hours sent from host server
 	DailySentMessages     *int64   `json:"daily_sent_messages"` // Total number of m.room.message in events table in the past 24 hours
 	DailyActiveRooms      *int64   `json:"daily_active_rooms"` // Total number of rooms with a m.room.message in the event table in the past 24 hours
+	MonthlyActiveUsers    *int64   `json:"monthly_active_users"` // Total number of users in the users ips table seen in the last 30 days
 	R30UsersAll           *int64   `json:"r30_users_all"` // r30 stat for all users regardless of client
 	R30UsersAndroid       *int64   `json:"r30_users_android"` // r30 stat considering only Riot Android
 	R30UsersIOS           *int64   `json:"r30_users_ios"` // r30 stat considering only Riot iOS
@@ -68,6 +69,7 @@ type StatsReport struct {
 	DatabaseEngine        string   `json:"database_engine"`
 	DatabaseServerVersion string   `json:"database_server_version"`
 	ServerContext         string   `json:"server_context"`
+	LogLevel              string   `json:"log_level"`
 	RemoteAddr            string
 	XForwardedFor         string
 	UserAgent             string
@@ -129,6 +131,7 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "daily_active_rooms", sr.DailyActiveRooms)
 	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
 	cols, vals = appendIfNonNil(cols, vals, "daily_sent_messages", sr.DailySentMessages)
+	cols, vals = appendIfNonNil(cols, vals, "monthly_active_users", sr.MonthlyActiveUsers)
 
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_all", sr.R30UsersAll)
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_android", sr.R30UsersAndroid)
@@ -153,6 +156,7 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonEmpty(cols, vals, "database_server_version", sr.DatabaseServerVersion)
 
 	cols, vals = appendIfNonEmpty(cols, vals, "server_context", sr.ServerContext)
+	cols, vals = appendIfNonEmpty(cols, vals, "log_level", sr.LogLevel)
 
 	var valuePlaceholders []string
 	for i := range vals {
@@ -225,6 +229,7 @@ func createTable(db *sql.DB) error {
 		daily_active_rooms BIGINT,
 		daily_messages BIGINT,
 		daily_sent_messages BIGINT,
+		monthly_active_users BIGINT,
 		r30_users_all BIGINT,
 		r30_users_android BIGINT,
 		r30_users_ios BIGINT,
@@ -241,7 +246,8 @@ func createTable(db *sql.DB) error {
 		python_version TEXT,
 		database_engine TEXT,
 		database_server_version TEXT,
-		server_context TEXT
+		server_context TEXT,
+		log_level TEXT
 		)`)
 
 	return err
