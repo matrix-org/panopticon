@@ -143,7 +143,7 @@ def main():
                             daily_user_type_guest,
                             daily_active_homeservers,
                             server_context
-                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 insert_data = [x if x is None else int(x) for x in result]
                 # insert day at the front
