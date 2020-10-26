@@ -27,4 +27,5 @@ _testmain.go
 *.prof
 
 venv/*
-
+.idea
+.python-version
