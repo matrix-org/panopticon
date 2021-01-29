@@ -49,8 +49,8 @@ type StatsReport struct {
 	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"` // Total native and guest users in users table
 	TotalRoomCount        *int64   `json:"total_room_count"` // Total number of rooms on the server
 	DailyActiveUsers      *int64   `json:"daily_active_users"` // Total number of users in the users ips table seen in the last 24 hours
-	DailyMessages         *int64   `json:"daily_messages"` // Total number of m.room.message in events table in the past 24 hours sent from host server
-	DailySentMessages     *int64   `json:"daily_sent_messages"` // Total number of m.room.message in events table in the past 24 hours
+	DailyMessages         *int64   `json:"daily_messages"` // Total number of m.room.message in events table in the past 24 hours
+	DailySentMessages     *int64   `json:"daily_sent_messages"` // Total number of m.room.message in events table in the past 24 hours sent from host server
 	DailyActiveRooms      *int64   `json:"daily_active_rooms"` // Total number of rooms with a m.room.message in the event table in the past 24 hours
 	MonthlyActiveUsers    *int64   `json:"monthly_active_users"` // Total number of users in the users ips table seen in the last 30 days
 	R30UsersAll           *int64   `json:"r30_users_all"` // r30 stat for all users regardless of client
