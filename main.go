@@ -49,9 +49,12 @@ type StatsReport struct {
 	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"` // Total native and guest users in users table
 	TotalRoomCount        *int64   `json:"total_room_count"` // Total number of rooms on the server
 	DailyActiveUsers      *int64   `json:"daily_active_users"` // Total number of users in the users ips table seen in the last 24 hours
-	DailyMessages         *int64   `json:"daily_messages"` // Total number of m.room.message in events table in the past 24 hours sent from host server
-	DailySentMessages     *int64   `json:"daily_sent_messages"` // Total number of m.room.message in events table in the past 24 hours
+	DailyMessages         *int64   `json:"daily_messages"` // Total number of m.room.message in events table in the past 24 hours
+	DailySentMessages     *int64   `json:"daily_sent_messages"` // Total number of m.room.message in events table in the past 24 hours sent from host server
 	DailyActiveRooms      *int64   `json:"daily_active_rooms"` // Total number of rooms with a m.room.message in the event table in the past 24 hours
+	DailyE2eeMessages     *int64   `json:"daily_e2ee_messages"` // Total number of m.room.encrypted in events table in the past 24 hours
+	DailySentE2eeMessages *int64   `json:"daily_sent_e2ee_messages"` // Total number of m.room.encrypted in events table in the past 24 hours sent from host server
+	DailyActiveE2eeRooms  *int64   `json:"daily_active_e2ee_rooms"` // Total number of rooms with a m.room.encrypted in the event table in the past 24 hours
 	MonthlyActiveUsers    *int64   `json:"monthly_active_users"` // Total number of users in the users ips table seen in the last 30 days
 	R30UsersAll           *int64   `json:"r30_users_all"` // r30 stat for all users regardless of client
 	R30UsersAndroid       *int64   `json:"r30_users_android"` // r30 stat considering only Riot Android
@@ -131,6 +134,9 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "daily_active_rooms", sr.DailyActiveRooms)
 	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
 	cols, vals = appendIfNonNil(cols, vals, "daily_sent_messages", sr.DailySentMessages)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_e2ee_rooms", sr.DailyActiveE2eeRooms)
+	cols, vals = appendIfNonNil(cols, vals, "daily_e2ee_messages", sr.DailyE2eeMessages)
+	cols, vals = appendIfNonNil(cols, vals, "daily_sent_e2ee_messages", sr.DailySentE2eeMessages)
 	cols, vals = appendIfNonNil(cols, vals, "monthly_active_users", sr.MonthlyActiveUsers)
 
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_all", sr.R30UsersAll)
@@ -229,6 +235,9 @@ func createTable(db *sql.DB) error {
 		daily_active_rooms BIGINT,
 		daily_messages BIGINT,
 		daily_sent_messages BIGINT,
+		daily_active_e2ee_rooms BIGINT,
+		daily_e2ee_messages BIGINT,
+		daily_sent_e2ee_messages BIGINT,
 		monthly_active_users BIGINT,
 		r30_users_all BIGINT,
 		r30_users_android BIGINT,
