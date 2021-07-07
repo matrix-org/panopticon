@@ -61,6 +61,11 @@ type StatsReport struct {
 	R30UsersIOS           *int64   `json:"r30_users_ios"`            // r30 stat considering only Riot iOS
 	R30UsersElectron      *int64   `json:"r30_users_electron"`       // r30 stat considering only Riot Electron
 	R30UsersWeb           *int64   `json:"r30_users_web"`            // r30 stat considering only web clients (must assume they are Riot)
+	R30V2UsersAll         *int64   `json:"r30v2_users_all"`          // r30v2 stat for all users regardless of client
+	R30V2UsersAndroid     *int64   `json:"r30v2_users_android"`      // r30v2 stat considering only Riot Android
+	R30V2UsersIOS         *int64   `json:"r30v2_users_ios"`          // r30v2 stat considering only Riot iOS
+	R30V2UsersElectron    *int64   `json:"r30v2_users_electron"`     // r30v2 stat considering only Riot Electron
+	R30V2UsersWeb         *int64   `json:"r30v2_users_web"`          // r30v2 stat considering only web clients (must assume they are Riot)
 	MemoryRSS             *int64   `json:"memory_rss"`
 	CPUAverage            *int64   `json:"cpu_average"`
 	CacheFactor           *float64 `json:"cache_factor"`
@@ -144,6 +149,12 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_ios", sr.R30UsersIOS)
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_electron", sr.R30UsersElectron)
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_web", sr.R30UsersWeb)
+
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_all", sr.R30V2UsersAll)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_android", sr.R30V2UsersAndroid)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_ios", sr.R30V2UsersIOS)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_electron", sr.R30V2UsersElectron)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_web", sr.R30V2UsersWeb)
 
 	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
 	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
