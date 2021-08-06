@@ -43,30 +43,35 @@ var (
 type StatsReport struct {
 	Homeserver            string
 	LocalTimestamp        int64    // Seconds since epoch, UTC
-	RemoteTimestamp       *int64   `json:"timestamp"` // Seconds since epoch, UTC
-	UptimeSeconds         *int64   `json:"uptime_seconds"` // Seconds since last restart
-	TotalUsers            *int64   `json:"total_users"` // Total users in users table
-	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"` // Total native and guest users in users table
-	TotalRoomCount        *int64   `json:"total_room_count"` // Total number of rooms on the server
-	DailyActiveUsers      *int64   `json:"daily_active_users"` // Total number of users in the users ips table seen in the last 24 hours
-	DailyMessages         *int64   `json:"daily_messages"` // Total number of m.room.message in events table in the past 24 hours
-	DailySentMessages     *int64   `json:"daily_sent_messages"` // Total number of m.room.message in events table in the past 24 hours sent from host server
-	DailyActiveRooms      *int64   `json:"daily_active_rooms"` // Total number of rooms with a m.room.message in the event table in the past 24 hours
-	DailyE2eeMessages     *int64   `json:"daily_e2ee_messages"` // Total number of m.room.encrypted in events table in the past 24 hours
+	RemoteTimestamp       *int64   `json:"timestamp"`                // Seconds since epoch, UTC
+	UptimeSeconds         *int64   `json:"uptime_seconds"`           // Seconds since last restart
+	TotalUsers            *int64   `json:"total_users"`              // Total users in users table
+	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"`   // Total native and guest users in users table
+	TotalRoomCount        *int64   `json:"total_room_count"`         // Total number of rooms on the server
+	DailyActiveUsers      *int64   `json:"daily_active_users"`       // Total number of users in the users ips table seen in the last 24 hours
+	DailyMessages         *int64   `json:"daily_messages"`           // Total number of m.room.message in events table in the past 24 hours
+	DailySentMessages     *int64   `json:"daily_sent_messages"`      // Total number of m.room.message in events table in the past 24 hours sent from host server
+	DailyActiveRooms      *int64   `json:"daily_active_rooms"`       // Total number of rooms with a m.room.message in the event table in the past 24 hours
+	DailyE2eeMessages     *int64   `json:"daily_e2ee_messages"`      // Total number of m.room.encrypted in events table in the past 24 hours
 	DailySentE2eeMessages *int64   `json:"daily_sent_e2ee_messages"` // Total number of m.room.encrypted in events table in the past 24 hours sent from host server
-	DailyActiveE2eeRooms  *int64   `json:"daily_active_e2ee_rooms"` // Total number of rooms with a m.room.encrypted in the event table in the past 24 hours
-	MonthlyActiveUsers    *int64   `json:"monthly_active_users"` // Total number of users in the users ips table seen in the last 30 days
-	R30UsersAll           *int64   `json:"r30_users_all"` // r30 stat for all users regardless of client
-	R30UsersAndroid       *int64   `json:"r30_users_android"` // r30 stat considering only Riot Android
-	R30UsersIOS           *int64   `json:"r30_users_ios"` // r30 stat considering only Riot iOS
-	R30UsersElectron      *int64   `json:"r30_users_electron"` // r30 stat considering only Riot Electron
-	R30UsersWeb           *int64   `json:"r30_users_web"` // r30 stat considering only web clients (must assume they are Riot)
+	DailyActiveE2eeRooms  *int64   `json:"daily_active_e2ee_rooms"`  // Total number of rooms with a m.room.encrypted in the event table in the past 24 hours
+	MonthlyActiveUsers    *int64   `json:"monthly_active_users"`     // Total number of users in the users ips table seen in the last 30 days
+	R30UsersAll           *int64   `json:"r30_users_all"`            // r30 stat for all users regardless of client
+	R30UsersAndroid       *int64   `json:"r30_users_android"`        // r30 stat considering only Riot Android
+	R30UsersIOS           *int64   `json:"r30_users_ios"`            // r30 stat considering only Riot iOS
+	R30UsersElectron      *int64   `json:"r30_users_electron"`       // r30 stat considering only Riot Electron
+	R30UsersWeb           *int64   `json:"r30_users_web"`            // r30 stat considering only web clients (must assume they are Riot)
+	R30V2UsersAll         *int64   `json:"r30v2_users_all"`          // r30v2 stat for all users regardless of client
+	R30V2UsersAndroid     *int64   `json:"r30v2_users_android"`      // r30v2 stat considering only Riot Android
+	R30V2UsersIOS         *int64   `json:"r30v2_users_ios"`          // r30v2 stat considering only Riot iOS
+	R30V2UsersElectron    *int64   `json:"r30v2_users_electron"`     // r30v2 stat considering only Riot Electron
+	R30V2UsersWeb         *int64   `json:"r30v2_users_web"`          // r30v2 stat considering only web clients (must assume they are Riot)
 	MemoryRSS             *int64   `json:"memory_rss"`
 	CPUAverage            *int64   `json:"cpu_average"`
 	CacheFactor           *float64 `json:"cache_factor"`
 	EventCacheSize        *int64   `json:"event_cache_size"`
-	DailyUserTypeNative   *int64   `json:"daily_user_type_native"` // New native users in users table in last 24 hours
-	DailyUserTypeGuest    *int64   `json:"daily_user_type_guest"` // New guest users in users table in the last 24 hours
+	DailyUserTypeNative   *int64   `json:"daily_user_type_native"`  // New native users in users table in last 24 hours
+	DailyUserTypeGuest    *int64   `json:"daily_user_type_guest"`   // New guest users in users table in the last 24 hours
 	DailyUserTypeBridged  *int64   `json:"daily_user_type_bridged"` // New bridged users in the users table in the last 24 hours
 	PythonVersion         string   `json:"python_version"`
 	DatabaseEngine        string   `json:"database_engine"`
@@ -144,6 +149,12 @@ func (r *Recorder) Save(sr StatsReport) error {
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_ios", sr.R30UsersIOS)
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_electron", sr.R30UsersElectron)
 	cols, vals = appendIfNonNil(cols, vals, "r30_users_web", sr.R30UsersWeb)
+
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_all", sr.R30V2UsersAll)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_android", sr.R30V2UsersAndroid)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_ios", sr.R30V2UsersIOS)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_electron", sr.R30V2UsersElectron)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_web", sr.R30V2UsersWeb)
 
 	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
 	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
@@ -244,6 +255,11 @@ func createTable(db *sql.DB) error {
 		r30_users_ios BIGINT,
 		r30_users_electron BIGINT,
 		r30_users_web BIGINT,
+		r30v2_users_all BIGINT,
+		r30v2_users_android BIGINT,
+		r30v2_users_ios BIGINT,
+		r30v2_users_electron BIGINT,
+		r30v2_users_web BIGINT,
 		cpu_average BIGINT,
 		memory_rss BIGINT,
 		cache_factor DOUBLE,
