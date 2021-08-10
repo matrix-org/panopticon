@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '1.13.1'
-      - run: apt-get update && apt-get install sqlite3 && apt-get clean
+      - run: sudo apt-get update && sudo apt-get install sqlite3 && sudo apt-get clean
       - run: go get github.com/mattn/go-sqlite3
       - run: go get github.com/go-sql-driver/mysql
       - run: go build
