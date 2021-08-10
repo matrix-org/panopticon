@@ -1,0 +1,19 @@
+name: Tests
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+jobs:
+  run-unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.13.1'
+      - run: apt-get update && apt-get install sqlite3 && apt-get clean
+      - run: go get github.com/mattn/go-sqlite3
+      - run: go get github.com/go-sql-driver/mysql
+      - run: go build
+      - run: ./runtests.sh
