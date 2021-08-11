@@ -53,6 +53,11 @@ def main():
         `r30_users_ios` bigint(20) DEFAULT NULL,
         `r30_users_electron` bigint(20) DEFAULT NULL,
         `r30_users_web` bigint(20) DEFAULT NULL,
+        `r30v2_users_all` bigint(20) DEFAULT NULL,
+        `r30v2_users_android` bigint(20) DEFAULT NULL,
+        `r30v2_users_ios` bigint(20) DEFAULT NULL,
+        `r30v2_users_electron` bigint(20) DEFAULT NULL,
+        `r30v2_users_web` bigint(20) DEFAULT NULL,
         `daily_user_type_native` bigint(20) DEFAULT NULL,
         `daily_user_type_bridged` bigint(20) DEFAULT NULL,
         `daily_user_type_guest` bigint(20) DEFAULT NULL,
@@ -110,6 +115,11 @@ def main():
                         SUM(r30_users_ios) as 'r30_users_ios',
                         SUM(r30_users_electron) as 'r30_users_electron',
                         SUM(r30_users_web) as 'r30_users_web',
+                        SUM(r30v2_users_all) as 'r30v2_users_all',
+                        SUM(r30v2_users_android) as 'r30v2_users_android',
+                        SUM(r30v2_users_ios) as 'r30v2_users_ios',
+                        SUM(r30v2_users_electron) as 'r30v2_users_electron',
+                        SUM(r30v2_users_web) as 'r30v2_users_web',
                         SUM(daily_user_type_native) as 'daily_user_type_native',
                         SUM(daily_user_type_bridged) as 'daily_user_type_bridged',
                         SUM(daily_user_type_guest) as 'daily_user_type_guest',
@@ -147,12 +157,18 @@ def main():
                             r30_users_ios,
                             r30_users_electron,
                             r30_users_web,
+                            r30v2_users_all,
+                            r30v2_users_android,
+                            r30v2_users_ios,
+                            r30v2_users_electron,
+                            r30v2_users_web,
                             daily_user_type_native,
                             daily_user_type_bridged,
                             daily_user_type_guest,
                             daily_active_homeservers,
                             server_context
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                              %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 insert_data = [x if x is None else int(x) for x in result]
                 # insert day at the front
