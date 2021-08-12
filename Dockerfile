@@ -1,6 +1,6 @@
 FROM golang:1.13
 
-RUN apt-get update && apt-get install sqlite3 && apt-get clean
+RUN apt-get -yq update && apt-get -yq install sqlite3 && apt-get -yq clean
 WORKDIR /go/src/panopticon
 RUN go get github.com/mattn/go-sqlite3
 RUN go get github.com/go-sql-driver/mysql
