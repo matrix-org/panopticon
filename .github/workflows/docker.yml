@@ -4,9 +4,9 @@ name: Build and push docker images
 
 on:
   - push:
-      tags: ["v*"]
-  - push:
-      paths:
+    tags: ["v*"]
+  - pull_request:
+    paths:
       - 'Dockerfile'
       - '.github/workflows/docker.yml'
 
