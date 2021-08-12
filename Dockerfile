@@ -1,4 +1,4 @@
-FROM golang
+FROM golang:1.13
 
 RUN apt-get update && apt-get install sqlite3 && apt-get clean
 WORKDIR /go/src/panopticon
