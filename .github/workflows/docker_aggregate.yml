@@ -45,9 +45,10 @@ jobs:
         with:
           images: reivilibre/panopticon
           tags: |
-            type=ref,event=tag,prefix=release-
+            type=ref,event=tag,prefix=aggregate-release-
           # we want all tags to be prefixed with aggregate- (to distinguish from
           # actual Panopticon images). This INCLUDES 'latest' tags.
+          # N.B. this is overridden by the prefixes specified in the tags section
           flavor: |
             prefix=aggregate-,onlatest=true
 
