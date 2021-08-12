@@ -1,6 +1,6 @@
 # GitHub actions workflow which builds and publishes the docker images.
 
-name: Build and push docker images
+name: Build and push docker images (Panopticon)
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
         with:
           images: reivilibre/panopticon
           tags: |
-            type=ref,event=tag
+            type=ref,event=tag,prefix=release-
 
       - name: Checkout
         uses: actions/checkout@v2
