@@ -43,11 +43,16 @@ def select_aggregate(cursor: Cursor, day: int) -> Optional[Dict[str, int]]:
     """
     Select the aggregated statistics for a given day.
     """
-    metric_select_lines = "\n,".join(f"`{metric}`" for metric in METRIC_COLUMNS)
+
+    extra_columns = ("daily_active_homeservers",)
+    all_columns = METRIC_COLUMNS + extra_columns
+
+    metric_select_lines = "\n,".join(f"`{metric}`" for metric in all_columns)
     cursor.execute(
         f"""
         SELECT
-            {metric_select_lines}
+            {metric_select_lines},
+            daily_active_homeservers
         FROM aggregate_stats
         WHERE day = %s
         """,
@@ -57,7 +62,7 @@ def select_aggregate(cursor: Cursor, day: int) -> Optional[Dict[str, int]]:
     if row is None:
         return None
     else:
-        return dict(zip(METRIC_COLUMNS, row))
+        return dict(zip(all_columns, row))
 
 
 class AggregateTestCase(TestCase):
@@ -110,3 +115,35 @@ class AggregateTestCase(TestCase):
             row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
             self.assertIsNot(row, None)
             self.assertEqual(row["total_users"], 4)
+
+    def test_empty_homeservers_not_counted(self):
+        """
+        Tests that empty servers are not counted (because they are likely to be
+        standby backup servers).
+        """
+
+        db = self.config.connect_db()
+        with db.cursor() as cursor:
+            insert_recording(
+                cursor,
+                "hs1",
+                INITIAL_DAY + ONE_DAY + 300,
+                {metric: 1 for metric in METRIC_COLUMNS},
+            )
+            insert_recording(
+                cursor,
+                "hs2-standby-backup",
+                INITIAL_DAY + ONE_DAY + 300,
+                dict(
+                    {metric: 3 for metric in METRIC_COLUMNS},
+                    total_users=0,
+                ),
+            )
+
+        aggregate_until_today(db, today=INITIAL_DAY + 2 * ONE_DAY)
+
+        with db.cursor() as cursor:
+            row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
+            self.assertIsNot(row, None)
+            self.assertEqual(row["total_users"], 1)
+            self.assertEqual(row["daily_active_homeservers"], 1)
