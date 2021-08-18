@@ -69,7 +69,6 @@ def main():
     """
 
     while True:
-
         create_table(db, SCHEMA)
         with db.cursor() as cursor:
             start_date_query = """
@@ -168,7 +167,8 @@ def main():
                             daily_active_homeservers,
                             server_context
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                              %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                              %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                              %s, %s, %s)
                 """
                 insert_data = [x if x is None else int(x) for x in result]
                 # insert day at the front
