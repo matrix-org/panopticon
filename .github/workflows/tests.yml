@@ -41,6 +41,6 @@ jobs:
           PANOPTICON_DB_NAME=teststats
           PANOPTICON_DB_USER=maria
           PANOPTICON_DB_PASSWORD=passypass
-          PANOPTICON_DB_HOST=mariadb
+          PANOPTICON_DB_HOST=localhost
           PANOPTICON_DB_PORT=3306
           green test_aggregate.py -vv
