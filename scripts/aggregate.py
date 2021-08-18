@@ -11,6 +11,11 @@ from datetime import datetime
 from pymysql import Connection
 
 ONE_DAY = 24 * 60 * 60
+# if the aggregation table isn't populated, this (2015-01-01) is the date that
+# we will start from.
+INITIAL_DAY = 1443657600
+
+METRIC_COLUMNS = ('total_users', 'total_nonbridged_users', 'total_room_count', 'daily_active_users', 'daily_active_rooms', 'daily_messages', 'daily_sent_messages', 'daily_active_e2ee_rooms', 'daily_e2ee_messages', 'daily_sent_e2ee_messages', 'monthly_active_users', 'r30_users_all', 'r30_users_android', 'r30_users_ios', 'r30_users_electron', 'r30_users_web', 'r30v2_users_all', 'r30v2_users_android', 'r30v2_users_ios', 'r30v2_users_electron', 'r30v2_users_web', 'daily_user_type_native', 'daily_user_type_bridged', 'daily_user_type_guest')
 
 
 class Config:
@@ -21,6 +26,15 @@ class Config:
         self.db_host = os.environ["PANOPTICON_DB_HOST"]
         self.db_port = int(os.environ["PANOPTICON_DB_PORT"])
 
+    def connect_db(self) -> Connection:
+        return pymysql.connect(
+            host=self.db_host,
+            user=self.db_user,
+            passwd=self.db_password,
+            db=self.db_name,
+            port=self.db_port,
+            ssl={'ssl': {}}
+        )
 
 def set_up_aggregate_stats_table(db: Connection):
     # Set up aggregate_stats schema
@@ -64,23 +78,18 @@ def set_up_aggregate_stats_table(db: Connection):
 def main():
     configuration = Config()
 
-    db = pymysql.connect(
-        host=configuration.db_host,
-        user=configuration.db_user,
-        passwd=configuration.db_password,
-        db=configuration.db_name,
-        port=configuration.db_port,
-        ssl={'ssl': {}}
-    )
+    db = configuration.connect_db()
 
     set_up_aggregate_stats_table(db)
 
     while True:
-        aggregate_once(db)
+        now = datetime.utcnow().date()
+        today = int(datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s'))
+        aggregate_until_today(db, today)
         time.sleep(ONE_DAY)
 
 
-def aggregate_once(db: Connection):
+def aggregate_until_today(db: Connection, today: int):
     with db.cursor() as cursor:
         start_date_query = """
             SELECT day from aggregate_stats
@@ -90,12 +99,11 @@ def aggregate_once(db: Connection):
         cursor.execute(start_date_query)
         try:
             last_day_in_db = cursor.fetchone()[0]
-        except IndexError:
+        except TypeError:
             # If no data to read assume is empty revert to 2015-10-01
             # which is when the stats table is populated from.
-            last_day_in_db = 1443657600
-    now = datetime.utcnow().date()
-    today = int(datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s'))
+            last_day_in_db = INITIAL_DAY
+
     processing_day = last_day_in_db + ONE_DAY
     while processing_day < today:
         with db.cursor() as cursor:
@@ -175,7 +183,7 @@ def aggregate_once(db: Connection):
                         daily_user_type_guest,
                         daily_active_homeservers,
                         server_context
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s ,%s,%s,
                           %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             insert_data = [x if x is None else int(x) for x in result]
