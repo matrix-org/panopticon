@@ -5,7 +5,7 @@ on:
   pull_request:
 jobs:
   run-unit-tests:
-    name: Unit tests
+    name: Unit tests (Panopticon)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,3 +17,12 @@ jobs:
       - run: go get github.com/go-sql-driver/mysql
       - run: go build
       - run: ./runtests.sh
+
+  run-unit-tests-aggregate:
+    name: Unit tests (Aggregate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt-get update && sudo apt-get install python3-pip python3 && sudo apt-get clean
+      - run: pip install green -r requirements.txt
+      - run: cd scripts && green test_aggregate.py
