@@ -29,3 +29,4 @@ _testmain.go
 venv/*
 .idea
 .python-version
+/scripts/__pycache__/
