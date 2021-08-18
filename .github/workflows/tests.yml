@@ -25,4 +25,4 @@ jobs:
       - uses: actions/checkout@v2
       - run: sudo apt-get update && sudo apt-get install python3-pip python3 && sudo apt-get clean
       - run: pip install green -r requirements.txt
-      - run: cd scripts && green test_aggregate.py
+      - run: cd scripts && green test_aggregate.py -vv
