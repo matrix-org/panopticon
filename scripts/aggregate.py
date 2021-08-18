@@ -184,8 +184,8 @@ def aggregate_until_today(db: Connection, today: int):
                         daily_active_homeservers,
                         server_context
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
+                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            %s, %s, %s)"""
             insert_data = [x if x is None else int(x) for x in result]
             # insert day at the front
             insert_data.insert(0, processing_day)
@@ -194,7 +194,6 @@ def aggregate_until_today(db: Connection, today: int):
             cursor.execute(insert_query, insert_data)
             db.commit()
             processing_day = processing_day + ONE_DAY
-
 
 def create_table(db, schema):
     """This method executes a CREATE TABLE IF NOT EXISTS command
