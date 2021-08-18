@@ -195,6 +195,7 @@ def aggregate_until_today(db: Connection, today: int):
             db.commit()
             processing_day = processing_day + ONE_DAY
 
+
 def create_table(db, schema):
     """This method executes a CREATE TABLE IF NOT EXISTS command
     _without_ generating a mysql warning if the table already exists."""
