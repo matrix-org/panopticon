@@ -5,7 +5,7 @@ on:
   pull_request:
 jobs:
   run-unit-tests:
-    name: Unit tests
+    name: Unit tests (Panopticon)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,3 +17,30 @@ jobs:
       - run: go get github.com/go-sql-driver/mysql
       - run: go build
       - run: ./runtests.sh
+
+  run-unit-tests-aggregate:
+    services:
+      mariadb:
+        image: mariadb:latest
+        ports:
+          - 3306
+        env:
+          MARIADB_USER: maria
+          MARIADB_PASSWORD: passypass
+          MARIADB_DATABASE: teststats
+          MARIADB_ROOT_PASSWORD: rootyroot
+
+    name: Unit tests (Aggregate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sudo apt-get update && sudo apt-get install python3-pip python3 && sudo apt-get clean
+      - run: pip install green -r requirements.txt
+      - run: >
+          cd scripts &&
+          PANOPTICON_DB_NAME=teststats
+          PANOPTICON_DB_USER=maria
+          PANOPTICON_DB_PASSWORD=passypass
+          PANOPTICON_DB_HOST=localhost
+          PANOPTICON_DB_PORT=${{ job.services.mariadb.ports[3306] }}
+          green test_aggregate.py -vv
