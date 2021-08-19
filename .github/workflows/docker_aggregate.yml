@@ -43,7 +43,7 @@ jobs:
         id: set-tag
         uses: docker/metadata-action@v3
         with:
-          images: reivilibre/panopticon
+          images: matrixdotorg/panopticon
           tags: |
             type=ref,event=tag,prefix=aggregation-release-
           # we want all tags to be prefixed with aggregate- (to distinguish from
