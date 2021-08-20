@@ -1,3 +1,21 @@
+Panopticon 0.2.1 (2021-08-20)
+=============================
+
+Bug fixes
+---------
+
+- Fixed the wrong number of query placeholders being present in Panopticon-Aggregate. ([\#28](https://github.com/matrix-org/panopticon/pull/28))
+
+
+Internal changes
+----------------
+
+- Added tests and CI checks (using *GitHub Actions*) for Panopticon-Aggregate. ([\#29](https://github.com/matrix-org/panopticon/pull/29))
+- Added documentation for making a release of Panopticon. ([\#27](https://github.com/matrix-org/panopticon/pull/27))
+- Fixed the name of the Docker repository in the GitHub Actions workflow that builds and pushes Docker images. ([\#26](https://github.com/matrix-org/panopticon/pull/26))
+- Removed the dependency on PyYAML for Panopticon-Aggregate. ([\#30](https://github.com/matrix-org/panopticon/pull/30))
+
+
 Panopticon 0.2.0 (2021-08-16)
 =============================
 
