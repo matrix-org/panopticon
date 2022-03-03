@@ -14,19 +14,25 @@
 
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+	"strings"
+)
 
 // Dendrite specific stats
 type ReportStatsDendrite struct {
-	GoOS               string  `json:"go_os,omitempty"`
-	GoArch             string  `json:"go_arch,omitempty"`
-	GoVersion          string  `json:"go_version,omitempty"`
-	FederationDisabled *bool   `json:"federation_disabled,omitempty"`
-	Monolith           *bool   `json:"monolith,omitempty"`
-	NATSEmbedded       *bool   `json:"nats_embedded,omitempty"`
-	NATSInMemory       *bool   `json:"nats_in_memory,omitempty"`
-	NumCPU             *int64  `json:"num_cpu,omitempty"`
-	NumGoRoutine       *int64  `json:"num_go_routine,omitempty"`
+	// We're using mostly Synapse defined fields
+	Common             ReportStatsSynapse
+	GoOS               string `json:"go_os,omitempty"`
+	GoArch             string `json:"go_arch,omitempty"`
+	GoVersion          string `json:"go_version,omitempty"`
+	FederationDisabled *bool  `json:"federation_disabled,omitempty"`
+	Monolith           *bool  `json:"monolith,omitempty"`
+	NATSEmbedded       *bool  `json:"nats_embedded,omitempty"`
+	NATSInMemory       *bool  `json:"nats_in_memory,omitempty"`
+	NumCPU             *int64 `json:"num_cpu,omitempty"`
+	NumGoRoutine       *int64 `json:"num_go_routine,omitempty"`
 	Version            string `json:"version,omitempty"`
 }
 
@@ -85,5 +91,74 @@ func createTableDendrite(db *sql.DB) error {
 		version TEXT
 		)`)
 
+	return err
+}
+
+func (sr *ReportStatsDendrite) Save(db *sql.DB) error {
+	cols := []string{"homeserver", "local_timestamp", "remote_addr"}
+	vals := []interface{}{sr.Common.Homeserver, sr.Common.LocalTimestamp, sr.Common.RemoteAddr}
+
+	cols, vals = appendIfNonNil(cols, vals, "remote_timestamp", sr.Common.RemoteTimestamp)
+	cols, vals = appendIfNonNil(cols, vals, "uptime_seconds", sr.Common.UptimeSeconds)
+	cols, vals = appendIfNonNil(cols, vals, "total_users", sr.Common.TotalUsers)
+	cols, vals = appendIfNonNil(cols, vals, "total_nonbridged_users", sr.Common.TotalNonBridgedUsers)
+	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.Common.TotalRoomCount)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.Common.DailyActiveUsers)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_rooms", sr.Common.DailyActiveRooms)
+	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.Common.DailyMessages)
+	cols, vals = appendIfNonNil(cols, vals, "daily_sent_messages", sr.Common.DailySentMessages)
+	cols, vals = appendIfNonNil(cols, vals, "daily_active_e2ee_rooms", sr.Common.DailyActiveE2eeRooms)
+	cols, vals = appendIfNonNil(cols, vals, "daily_e2ee_messages", sr.Common.DailyE2eeMessages)
+	cols, vals = appendIfNonNil(cols, vals, "daily_sent_e2ee_messages", sr.Common.DailySentE2eeMessages)
+	cols, vals = appendIfNonNil(cols, vals, "monthly_active_users", sr.Common.MonthlyActiveUsers)
+
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_all", sr.Common.R30UsersAll)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_android", sr.Common.R30UsersAndroid)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_ios", sr.Common.R30UsersIOS)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_electron", sr.Common.R30UsersElectron)
+	cols, vals = appendIfNonNil(cols, vals, "r30_users_web", sr.Common.R30UsersWeb)
+
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_all", sr.Common.R30V2UsersAll)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_android", sr.Common.R30V2UsersAndroid)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_ios", sr.Common.R30V2UsersIOS)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_electron", sr.Common.R30V2UsersElectron)
+	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_web", sr.Common.R30V2UsersWeb)
+
+	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.Common.XForwardedFor)
+	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.Common.UserAgent)
+
+	cols, vals = appendIfNonNil(cols, vals, "cpu_average", sr.Common.CPUAverage)
+	cols, vals = appendIfNonNil(cols, vals, "memory_rss", sr.Common.MemoryRSS)
+
+	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_native", sr.Common.DailyUserTypeNative)
+	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_guest", sr.Common.DailyUserTypeGuest)
+	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_bridged", sr.Common.DailyUserTypeBridged)
+
+	cols, vals = appendIfNonEmpty(cols, vals, "database_engine", sr.Common.DatabaseEngine)
+	cols, vals = appendIfNonEmpty(cols, vals, "database_server_version", sr.Common.DatabaseServerVersion)
+
+	cols, vals = appendIfNonEmpty(cols, vals, "log_level", sr.Common.LogLevel)
+
+	cols, vals = appendIfNonEmpty(cols, vals, "goos", sr.GoOS)
+	cols, vals = appendIfNonEmpty(cols, vals, "goarch", sr.GoArch)
+	cols, vals = appendIfNonEmpty(cols, vals, "goversion", sr.GoVersion)
+	cols, vals = appendIfNonNilBool(cols, vals, "federation_disabled", sr.FederationDisabled)
+	cols, vals = appendIfNonNilBool(cols, vals, "monolith", sr.Monolith)
+	cols, vals = appendIfNonNilBool(cols, vals, "nats_embedded", sr.NATSEmbedded)
+	cols, vals = appendIfNonNilBool(cols, vals, "nats_in_memory", sr.NATSInMemory)
+	cols, vals = appendIfNonNil(cols, vals, "num_cpu", sr.NumCPU)
+	cols, vals = appendIfNonNil(cols, vals, "num_go_routine", sr.NumGoRoutine)
+	cols, vals = appendIfNonEmpty(cols, vals, "version", sr.Version)
+
+	var valuePlaceholders []string
+	for i := range vals {
+		if *dbDriver == "mysql" {
+			valuePlaceholders = append(valuePlaceholders, "?")
+		} else {
+			valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
+		}
+	}
+	qry := fmt.Sprintf("INSERT INTO dendrite_stats (%s) VALUES (%s)", strings.Join(cols, ", "), strings.Join(valuePlaceholders, ", "))
+	_, err := db.Exec(qry, vals...)
 	return err
 }

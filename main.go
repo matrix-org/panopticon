@@ -92,85 +92,14 @@ func (r *Recorder) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *Recorder) Save(sr StatsReport, isDendrite bool) error {
-	tableName := "stats"
-	cols := []string{"homeserver", "local_timestamp", "remote_addr"}
-	vals := []interface{}{sr.Homeserver, sr.LocalTimestamp, sr.RemoteAddr}
-
-	cols, vals = appendIfNonNil(cols, vals, "remote_timestamp", sr.RemoteTimestamp)
-	cols, vals = appendIfNonNil(cols, vals, "uptime_seconds", sr.UptimeSeconds)
-	cols, vals = appendIfNonNil(cols, vals, "total_users", sr.TotalUsers)
-	cols, vals = appendIfNonNil(cols, vals, "total_nonbridged_users", sr.TotalNonBridgedUsers)
-	cols, vals = appendIfNonNil(cols, vals, "total_room_count", sr.TotalRoomCount)
-	cols, vals = appendIfNonNil(cols, vals, "daily_active_users", sr.DailyActiveUsers)
-	cols, vals = appendIfNonNil(cols, vals, "daily_active_rooms", sr.DailyActiveRooms)
-	cols, vals = appendIfNonNil(cols, vals, "daily_messages", sr.DailyMessages)
-	cols, vals = appendIfNonNil(cols, vals, "daily_sent_messages", sr.DailySentMessages)
-	cols, vals = appendIfNonNil(cols, vals, "daily_active_e2ee_rooms", sr.DailyActiveE2eeRooms)
-	cols, vals = appendIfNonNil(cols, vals, "daily_e2ee_messages", sr.DailyE2eeMessages)
-	cols, vals = appendIfNonNil(cols, vals, "daily_sent_e2ee_messages", sr.DailySentE2eeMessages)
-	cols, vals = appendIfNonNil(cols, vals, "monthly_active_users", sr.MonthlyActiveUsers)
-
-	cols, vals = appendIfNonNil(cols, vals, "r30_users_all", sr.R30UsersAll)
-	cols, vals = appendIfNonNil(cols, vals, "r30_users_android", sr.R30UsersAndroid)
-	cols, vals = appendIfNonNil(cols, vals, "r30_users_ios", sr.R30UsersIOS)
-	cols, vals = appendIfNonNil(cols, vals, "r30_users_electron", sr.R30UsersElectron)
-	cols, vals = appendIfNonNil(cols, vals, "r30_users_web", sr.R30UsersWeb)
-
-	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_all", sr.R30V2UsersAll)
-	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_android", sr.R30V2UsersAndroid)
-	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_ios", sr.R30V2UsersIOS)
-	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_electron", sr.R30V2UsersElectron)
-	cols, vals = appendIfNonNil(cols, vals, "r30v2_users_web", sr.R30V2UsersWeb)
-
-	cols, vals = appendIfNonEmpty(cols, vals, "forwarded_for", sr.XForwardedFor)
-	cols, vals = appendIfNonEmpty(cols, vals, "user_agent", sr.UserAgent)
-
-	cols, vals = appendIfNonNil(cols, vals, "cpu_average", sr.CPUAverage)
-	cols, vals = appendIfNonNil(cols, vals, "memory_rss", sr.MemoryRSS)
-	if !isDendrite {
-		cols, vals = appendIfNonNilFloat(cols, vals, "cache_factor", sr.CacheFactor)
-		cols, vals = appendIfNonNil(cols, vals, "event_cache_size", sr.EventCacheSize)
-	}
-	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_native", sr.DailyUserTypeNative)
-	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_guest", sr.DailyUserTypeGuest)
-	cols, vals = appendIfNonNil(cols, vals, "daily_user_type_bridged", sr.DailyUserTypeBridged)
-	if !isDendrite {
-		cols, vals = appendIfNonEmpty(cols, vals, "python_version", sr.PythonVersion)
-	}
-	cols, vals = appendIfNonEmpty(cols, vals, "database_engine", sr.DatabaseEngine)
-	cols, vals = appendIfNonEmpty(cols, vals, "database_server_version", sr.DatabaseServerVersion)
-
-	if !isDendrite {
-		cols, vals = appendIfNonEmpty(cols, vals, "server_context", sr.ServerContext)
-	}
-	cols, vals = appendIfNonEmpty(cols, vals, "log_level", sr.LogLevel)
-
 	if isDendrite {
-		tableName = "dendrite_stats"
-		cols, vals = appendIfNonEmpty(cols, vals, "goos", sr.GoOS)
-		cols, vals = appendIfNonEmpty(cols, vals, "goarch", sr.GoArch)
-		cols, vals = appendIfNonEmpty(cols, vals, "goversion", sr.GoVersion)
-		cols, vals = appendIfNonNilBool(cols, vals, "federation_disabled", sr.FederationDisabled)
-		cols, vals = appendIfNonNilBool(cols, vals, "monolith", sr.Monolith)
-		cols, vals = appendIfNonNilBool(cols, vals, "nats_embedded", sr.NATSEmbedded)
-		cols, vals = appendIfNonNilBool(cols, vals, "nats_in_memory", sr.NATSInMemory)
-		cols, vals = appendIfNonNil(cols, vals, "num_cpu", sr.NumCPU)
-		cols, vals = appendIfNonNil(cols, vals, "num_go_routine", sr.NumGoRoutine)
-		cols, vals = appendIfNonEmpty(cols, vals, "version", sr.Version)
+		s := sr.ReportStatsDendrite
+		s.Common = sr.ReportStatsSynapse
+		return s.Save(r.DB)
 	}
-
-	var valuePlaceholders []string
-	for i := range vals {
-		if *dbDriver == "mysql" {
-			valuePlaceholders = append(valuePlaceholders, "?")
-		} else {
-			valuePlaceholders = append(valuePlaceholders, fmt.Sprintf("$%d", i+1))
-		}
-	}
-	qry := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", tableName, strings.Join(cols, ", "), strings.Join(valuePlaceholders, ", "))
-	_, err := r.DB.Exec(qry, vals...)
-	return err
+	return sr.ReportStatsSynapse.Save(r.DB)
 }
+
 
 func appendIfNonNilBool(cols []string, vals []interface{}, name string, value *bool) ([]string, []interface{}) {
 	if value != nil {
