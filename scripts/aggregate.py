@@ -16,7 +16,7 @@ ONE_DAY = 24 * 60 * 60
 INITIAL_DAY = 1443657600
 
 METRIC_COLUMNS = ('total_users', 'total_nonbridged_users', 'total_room_count', 'daily_active_users', 'daily_active_rooms', 'daily_messages', 'daily_sent_messages', 'daily_active_e2ee_rooms', 'daily_e2ee_messages', 'daily_sent_e2ee_messages', 'monthly_active_users', 'r30_users_all', 'r30_users_android', 'r30_users_ios', 'r30_users_electron', 'r30_users_web', 'r30v2_users_all', 'r30v2_users_android', 'r30v2_users_ios', 'r30v2_users_electron', 'r30v2_users_web', 'daily_user_type_native', 'daily_user_type_bridged', 'daily_user_type_guest')
-
+QUERY_COLUMNS = ','.join(METRIC_COLUMNS + ('homeserver',))
 
 class Config:
     def __init__(self):
@@ -113,7 +113,7 @@ def aggregate_until_today(db: Connection, today: int):
             # under report. Filtering on total_users removes the standbys.
             # It also filters out genuinely unused servers, but the value of
             # aggregating these servers is limited.
-            query = """
+            query = f"""
                 SELECT
                     SUM(total_users) as 'total_users',
                     SUM(total_nonbridged_users) as 'total_nonbridged_users',
@@ -141,15 +141,21 @@ def aggregate_until_today(db: Connection, today: int):
                     SUM(daily_user_type_guest) as 'daily_user_type_guest',
                     COUNT(homeserver) as 'homeserver'
                 FROM (
-                    SELECT *, MAX(local_timestamp)
+                    SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
                     FROM stats
+                    WHERE local_timestamp >= %s and local_timestamp < %s
+                    AND total_users > 0
+                    GROUP BY homeserver
+                    UNION
+                    SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
+                    FROM dendrite_stats
                     WHERE local_timestamp >= %s and local_timestamp < %s
                     AND total_users > 0
                     GROUP BY homeserver
                 ) as s;
             """
 
-            date_range = (processing_day, processing_day + ONE_DAY)
+            date_range = (processing_day, processing_day + ONE_DAY, processing_day, processing_day + ONE_DAY)
             cursor.execute(query, date_range)
             result = cursor.fetchone()
 
