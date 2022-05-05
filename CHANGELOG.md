@@ -11,6 +11,7 @@ Internal changes
 ----------------
 
 - Removed CircleCI in favor of Github Actions ([#31](https://github.com/matrix-org/panopticon/pull/31))
+- Dockerfiles are now using Go 1.18
 
 Panopticon 0.2.1 (2021-08-20)
 =============================
