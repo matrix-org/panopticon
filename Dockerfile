@@ -1,13 +1,13 @@
-FROM golang:1.13
+FROM golang:1.18
 
 RUN apt-get -yq update && apt-get -yq install sqlite3 && apt-get -yq clean
 WORKDIR /go/src/panopticon
-RUN go get github.com/mattn/go-sqlite3
-RUN go get github.com/go-sql-driver/mysql
 
 COPY ./runtests.sh /go/src/panopticon
 COPY ./tests /go/src/panopticon/tests
-COPY ./main.go /go/src/panopticon
+COPY ./*.go /go/src/panopticon
+COPY ./go.mod /go/src/panopticon
+COPY ./go.sum /go/src/panopticon
 RUN go build
 RUN ./runtests.sh
 
