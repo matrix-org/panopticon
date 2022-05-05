@@ -1,3 +1,17 @@
+Panopticon 0.3.0 (2022-05-05)
+=============================
+
+New features
+------------
+
+- Added table for Dendrite statistics
+
+
+Internal changes
+----------------
+
+- Removed CircleCI in favor of Github Actions ([#31](https://github.com/matrix-org/panopticon/pull/31))
+
 Panopticon 0.2.1 (2021-08-20)
 =============================
 
@@ -27,7 +41,7 @@ Schema changes
 The following SQL can be applied before applying the upgrade:
 ```sql
 ALTER TABLE stats
-  ADD COLUMN daily_active_e2ee_rooms BIGINT AFTER daily_sent_messages,
+    ADD COLUMN daily_active_e2ee_rooms BIGINT AFTER daily_sent_messages,
   ADD COLUMN daily_e2ee_messages BIGINT AFTER daily_active_e2ee_rooms,
   ADD COLUMN daily_sent_e2ee_messages BIGINT AFTER daily_e2ee_messages,
   ADD COLUMN r30v2_users_all BIGINT AFTER r30_users_web,
@@ -37,7 +51,7 @@ ALTER TABLE stats
   ADD COLUMN r30v2_users_web BIGINT AFTER r30v2_users_electron;
 
 ALTER TABLE aggregate_stats
-  ADD COLUMN daily_active_e2ee_rooms BIGINT AFTER daily_sent_messages,
+    ADD COLUMN daily_active_e2ee_rooms BIGINT AFTER daily_sent_messages,
   ADD COLUMN daily_e2ee_messages BIGINT AFTER daily_active_e2ee_rooms,
   ADD COLUMN daily_sent_e2ee_messages BIGINT AFTER daily_e2ee_messages,
   ADD COLUMN r30v2_users_all BIGINT AFTER r30_users_web,
