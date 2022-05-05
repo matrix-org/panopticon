@@ -23,7 +23,7 @@ import (
 // Dendrite specific stats
 type ReportStatsDendrite struct {
 	// We're using mostly Synapse defined fields
-	Common             ReportStatsSynapse
+	Common             CommonStats
 	GoOS               string `json:"go_os,omitempty"`
 	GoArch             string `json:"go_arch,omitempty"`
 	GoVersion          string `json:"go_version,omitempty"`

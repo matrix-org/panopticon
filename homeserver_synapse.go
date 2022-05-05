@@ -22,46 +22,11 @@ import (
 
 // Synapse specific stats
 type ReportStatsSynapse struct {
-	Homeserver            string
-	LocalTimestamp        int64    // Seconds since epoch, UTC
-	RemoteTimestamp       *int64   `json:"timestamp"`                // Seconds since epoch, UTC
-	UptimeSeconds         *int64   `json:"uptime_seconds"`           // Seconds since last restart
-	TotalUsers            *int64   `json:"total_users"`              // Total users in users table
-	TotalNonBridgedUsers  *int64   `json:"total_nonbridged_users"`   // Total native and guest users in users table
-	TotalRoomCount        *int64   `json:"total_room_count"`         // Total number of rooms on the server
-	DailyActiveUsers      *int64   `json:"daily_active_users"`       // Total number of users in the users ips table seen in the last 24 hours
-	DailyMessages         *int64   `json:"daily_messages"`           // Total number of m.room.message in events table in the past 24 hours
-	DailySentMessages     *int64   `json:"daily_sent_messages"`      // Total number of m.room.message in events table in the past 24 hours sent from host server
-	DailyActiveRooms      *int64   `json:"daily_active_rooms"`       // Total number of rooms with a m.room.message in the event table in the past 24 hours
-	DailyE2eeMessages     *int64   `json:"daily_e2ee_messages"`      // Total number of m.room.encrypted in events table in the past 24 hours
-	DailySentE2eeMessages *int64   `json:"daily_sent_e2ee_messages"` // Total number of m.room.encrypted in events table in the past 24 hours sent from host server
-	DailyActiveE2eeRooms  *int64   `json:"daily_active_e2ee_rooms"`  // Total number of rooms with a m.room.encrypted in the event table in the past 24 hours
-	MonthlyActiveUsers    *int64   `json:"monthly_active_users"`     // Total number of users in the users ips table seen in the last 30 days
-	R30UsersAll           *int64   `json:"r30_users_all"`            // r30 stat for all users regardless of client
-	R30UsersAndroid       *int64   `json:"r30_users_android"`        // r30 stat considering only Riot Android
-	R30UsersIOS           *int64   `json:"r30_users_ios"`            // r30 stat considering only Riot iOS
-	R30UsersElectron      *int64   `json:"r30_users_electron"`       // r30 stat considering only Riot Electron
-	R30UsersWeb           *int64   `json:"r30_users_web"`            // r30 stat considering only web clients (must assume they are Riot)
-	R30V2UsersAll         *int64   `json:"r30v2_users_all"`          // r30v2 stat for all users regardless of client
-	R30V2UsersAndroid     *int64   `json:"r30v2_users_android"`      // r30v2 stat considering only Riot Android
-	R30V2UsersIOS         *int64   `json:"r30v2_users_ios"`          // r30v2 stat considering only Riot iOS
-	R30V2UsersElectron    *int64   `json:"r30v2_users_electron"`     // r30v2 stat considering only Riot Electron
-	R30V2UsersWeb         *int64   `json:"r30v2_users_web"`          // r30v2 stat considering only web clients (must assume they are Riot)
-	MemoryRSS             *int64   `json:"memory_rss"`
-	CPUAverage            *int64   `json:"cpu_average"`
-	CacheFactor           *float64 `json:"cache_factor"`
-	EventCacheSize        *int64   `json:"event_cache_size"`
-	DailyUserTypeNative   *int64   `json:"daily_user_type_native"`  // New native users in users table in last 24 hours
-	DailyUserTypeGuest    *int64   `json:"daily_user_type_guest"`   // New guest users in users table in the last 24 hours
-	DailyUserTypeBridged  *int64   `json:"daily_user_type_bridged"` // New bridged users in the users table in the last 24 hours
-	PythonVersion         string   `json:"python_version"`
-	DatabaseEngine        string   `json:"database_engine"`
-	DatabaseServerVersion string   `json:"database_server_version"`
-	ServerContext         string   `json:"server_context"`
-	LogLevel              string   `json:"log_level"`
-	RemoteAddr            string
-	XForwardedFor         string
-	UserAgent             string
+	CommonStats
+	CacheFactor    *float64 `json:"cache_factor"`
+	EventCacheSize *int64   `json:"event_cache_size"`
+	PythonVersion  string   `json:"python_version"`
+	ServerContext  string   `json:"server_context"`
 }
 
 func createTableSynapse(db *sql.DB) error {
