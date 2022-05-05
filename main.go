@@ -45,6 +45,8 @@ type StatsReport struct {
 	ReportStatsDendrite
 }
 
+// CommonStats defines statistics every server should report to be comparable.
+// Uncommon statistics should be added to the specific homeserver struct.
 type CommonStats struct {
 	Homeserver            string
 	LocalTimestamp        int64  // Seconds since epoch, UTC
