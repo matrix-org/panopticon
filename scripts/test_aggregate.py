@@ -16,6 +16,7 @@ def insert_recording(
     timestamp: int,
     metrics: Dict[str, int],
     remote_addr: str = "192.42.42.42",
+    table: str = "stats",
 ):
     """
     Insert a row that emulates a row that Panopticon would update after a server
@@ -24,7 +25,7 @@ def insert_recording(
     metric_set_lines = ",\n".join(f"`{metric}` = %s" for metric in METRIC_COLUMNS)
     cursor.execute(
         f"""
-        INSERT INTO stats
+        INSERT INTO {table}
         SET
             homeserver = %s,
             local_timestamp = %s,
@@ -71,21 +72,23 @@ class AggregateTestCase(TestCase):
         db = self.config.connect_db()
         with db.cursor() as cursor:
             cursor.execute("DROP TABLE IF EXISTS aggregate_stats;")
-            cursor.execute("DROP TABLE IF EXISTS stats;")
-            metric_lines = ",\n".join(f"`{metric}` BIGINT" for metric in METRIC_COLUMNS)
-            cursor.execute(
-                f"""
-                CREATE TABLE stats (
-                    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                    homeserver VARCHAR(256),
-                    local_timestamp BIGINT,
-                    remote_timestamp BIGINT,
-                    remote_addr TEXT,
-                    forwarded_for TEXT,
-                    user_agent TEXT,
-                    {metric_lines}
-                );
-                """
+
+            for stats_table in ('stats', 'dendrite_stats'):
+                cursor.execute(f"DROP TABLE IF EXISTS {stats_table};")
+                metric_lines = ",\n".join(f"`{metric}` BIGINT" for metric in METRIC_COLUMNS)
+                cursor.execute(
+                    f"""
+                    CREATE TABLE {stats_table} (
+                        id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                        homeserver VARCHAR(256),
+                        local_timestamp BIGINT,
+                        remote_timestamp BIGINT,
+                        remote_addr TEXT,
+                        forwarded_for TEXT,
+                        user_agent TEXT,
+                        {metric_lines}
+                    );
+                    """
             )
         set_up_aggregate_stats_table(db)
 
@@ -108,13 +111,20 @@ class AggregateTestCase(TestCase):
                 INITIAL_DAY + ONE_DAY + 300,
                 {metric: 3 for metric in METRIC_COLUMNS},
             )
+            insert_recording(
+                cursor,
+                "hs3",
+                INITIAL_DAY + ONE_DAY + 300,
+                {metric: 2 for metric in METRIC_COLUMNS},
+                table="dendrite_stats",
+            )
 
         aggregate_until_today(db, today=INITIAL_DAY + 2 * ONE_DAY)
 
         with db.cursor() as cursor:
             row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
             self.assertIsNot(row, None)
-            self.assertEqual(row["total_users"], 4)
+            self.assertEqual(row["total_users"], 6)
 
     def test_empty_homeservers_not_counted(self):
         """
