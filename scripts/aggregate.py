@@ -166,7 +166,7 @@ def aggregate_until_today(db: Connection, today: int):
                     SUM(r30v2_users_electron) as 'r30v2_users_electron',
                     SUM(r30v2_users_web) as 'r30v2_users_web',
                     SUM(daily_user_type_native) as 'daily_user_type_native',
-                    SUM(daily_user_type_bridged) as 'daily_user_type_bridged',F
+                    SUM(daily_user_type_bridged) as 'daily_user_type_bridged',
                     SUM(daily_user_type_guest) as 'daily_user_type_guest',
                     COUNT(homeserver) as 'homeserver'
                 FROM (
