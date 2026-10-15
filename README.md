@@ -4,7 +4,7 @@ panopticon records usage metrics from homeservers
 
 ## Building
 
-Tested with Python 3.12 and Go 1.18
+Tested with Python 3.12 and Go 1.26
 
 To build, run:
 
