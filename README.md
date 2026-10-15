@@ -13,7 +13,7 @@ go build
 ```
 
 ## Testing
-There is a second `Dockerfile-testing` that builds panopticon to run the tests as above, as we probably want locally.
+There is a second `Dockerfile-tests` that builds panopticon to run the tests as above, as we probably want locally.
 
 This only requires docker on your local workstation, no go install or dependencies required.
 
