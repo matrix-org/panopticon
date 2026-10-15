@@ -37,4 +37,6 @@ echo -e "${prefix}${pass} test(s) passed, ${fail} test(s) failed"
 reset_terminal_color
 
 # Exit with an error if there are any failures
-if [ "$fail" -ne 0 ]; then exit 1;
+if [ "$fail" -ne 0 ]; then
+  exit 1;
+fi
