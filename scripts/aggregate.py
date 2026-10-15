@@ -15,8 +15,34 @@ ONE_DAY = 24 * 60 * 60
 # we will start from.
 INITIAL_DAY = 1443657600
 
-METRIC_COLUMNS = ('total_users', 'total_nonbridged_users', 'total_room_count', 'daily_active_users', 'daily_active_rooms', 'daily_messages', 'daily_sent_messages', 'daily_active_e2ee_rooms', 'daily_e2ee_messages', 'daily_sent_e2ee_messages', 'monthly_active_users', 'r30_users_all', 'r30_users_android', 'r30_users_ios', 'r30_users_electron', 'r30_users_web', 'r30v2_users_all', 'r30v2_users_android', 'r30v2_users_ios', 'r30v2_users_electron', 'r30v2_users_web', 'daily_user_type_native', 'daily_user_type_bridged', 'daily_user_type_guest')
-QUERY_COLUMNS = ','.join(METRIC_COLUMNS + ('homeserver',))
+METRIC_COLUMNS = (
+    "total_users",
+    "total_nonbridged_users",
+    "total_room_count",
+    "daily_active_users",
+    "daily_active_rooms",
+    "daily_messages",
+    "daily_sent_messages",
+    "daily_active_e2ee_rooms",
+    "daily_e2ee_messages",
+    "daily_sent_e2ee_messages",
+    "monthly_active_users",
+    "r30_users_all",
+    "r30_users_android",
+    "r30_users_ios",
+    "r30_users_electron",
+    "r30_users_web",
+    "r30v2_users_all",
+    "r30v2_users_android",
+    "r30v2_users_ios",
+    "r30v2_users_electron",
+    "r30v2_users_web",
+    "daily_user_type_native",
+    "daily_user_type_bridged",
+    "daily_user_type_guest",
+)
+QUERY_COLUMNS = ",".join(METRIC_COLUMNS + ("homeserver",))
+
 
 class Config:
     def __init__(self):
@@ -33,8 +59,9 @@ class Config:
             passwd=self.db_password,
             db=self.db_name,
             port=self.db_port,
-            ssl={'ssl': {}}
+            ssl={"ssl": {}},
         )
+
 
 def set_up_aggregate_stats_table(db: Connection):
     # Set up aggregate_stats schema
@@ -84,7 +111,9 @@ def main():
 
     while True:
         now = datetime.utcnow().date()
-        today = int(datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime('%s'))
+        today = int(
+            datetime(now.year, now.month, now.day, tzinfo=tz.tzutc()).strftime("%s")
+        )
         aggregate_until_today(db, today)
         time.sleep(ONE_DAY)
 
@@ -155,7 +184,12 @@ def aggregate_until_today(db: Connection, today: int):
                 ) as s;
             """
 
-            date_range = (processing_day, processing_day + ONE_DAY, processing_day, processing_day + ONE_DAY)
+            date_range = (
+                processing_day,
+                processing_day + ONE_DAY,
+                processing_day,
+                processing_day + ONE_DAY,
+            )
             cursor.execute(query, date_range)
             result = cursor.fetchone()
 
@@ -206,9 +240,9 @@ def create_table(db, schema):
     """This method executes a CREATE TABLE IF NOT EXISTS command
     _without_ generating a mysql warning if the table already exists."""
     cursor = db.cursor()
-    cursor.execute('SET sql_notes = 0;')
+    cursor.execute("SET sql_notes = 0;")
     cursor.execute(schema)
-    cursor.execute('SET sql_notes = 1;')
+    cursor.execute("SET sql_notes = 1;")
     db.commit()
 
 
