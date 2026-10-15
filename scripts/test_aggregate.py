@@ -73,9 +73,11 @@ class AggregateTestCase(TestCase):
         with db.cursor() as cursor:
             cursor.execute("DROP TABLE IF EXISTS aggregate_stats;")
 
-            for stats_table in ('stats', 'dendrite_stats'):
+            for stats_table in ("stats", "dendrite_stats"):
                 cursor.execute(f"DROP TABLE IF EXISTS {stats_table};")
-                metric_lines = ",\n".join(f"`{metric}` BIGINT" for metric in METRIC_COLUMNS)
+                metric_lines = ",\n".join(
+                    f"`{metric}` BIGINT" for metric in METRIC_COLUMNS
+                )
                 cursor.execute(
                     f"""
                     CREATE TABLE {stats_table} (
@@ -89,7 +91,7 @@ class AggregateTestCase(TestCase):
                         {metric_lines}
                     );
                     """
-            )
+                )
         set_up_aggregate_stats_table(db)
 
     def test_sum_of_metrics(self):
