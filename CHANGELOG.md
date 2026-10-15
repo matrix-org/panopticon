@@ -1,3 +1,13 @@
+Panopticon *(upcoming version)* (xxxx-xx-xx)
+=============================
+
+Internal changes
+----------------
+
+- Dockerfiles are now using Python 3.12 and Go 1.26
+- Pin our GitHub Actions dependencies
+
+
 Panopticon 0.3.0 (2022-05-05)
 =============================
 
@@ -11,7 +21,7 @@ Internal changes
 ----------------
 
 - Removed CircleCI in favor of Github Actions ([#31](https://github.com/matrix-org/panopticon/pull/31))
-- Dockerfiles are now using Go 1.26
+- Dockerfiles are now using Go 1.18
 
 Panopticon 0.2.1 (2021-08-20)
 =============================
