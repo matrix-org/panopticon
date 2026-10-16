@@ -16,7 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// panopticon collects statistics posted to it, and records them in a sqlite3 or mysql database.
+// panopticon collects statistics posted to it, and records them in a sqlite3, mysql or postgres database.
 package main
 
 import (
@@ -32,6 +32,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
 var (

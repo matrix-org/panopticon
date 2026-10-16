@@ -38,11 +38,16 @@ type ReportStatsDendrite struct {
 
 func createTableDendrite(db *sql.DB) error {
 	autoincrement := "AUTOINCREMENT"
+	primaryKeyType := "INTEGER"
+
 	if *dbDriver == "mysql" {
 		autoincrement = "AUTO_INCREMENT"
+	} else if *dbDriver == "postgres" {
+		autoincrement = ""
+		primaryKeyType = "SERIAL"
 	}
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS dendrite_stats(
-		id INTEGER NOT NULL PRIMARY KEY ` + autoincrement + ` ,
+		id ` + primaryKeyType + ` NOT NULL PRIMARY KEY ` + autoincrement + ` ,
 		homeserver VARCHAR(256),
 		local_timestamp BIGINT,
 		remote_timestamp BIGINT,
