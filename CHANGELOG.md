@@ -4,7 +4,7 @@ Panopticon *(upcoming version)* (xxxx-xx-xx)
 Bug fixes
 ---------
 
-- Aggregate stats now count the biggest report (by `monthly_active_users`) for each `homeserver` name per day, instead of an arbitrary one, ([#39](https://github.com/matrix-org/panopticon/pull/39))
+- Aggregate stats now count the biggest report (by `monthly_active_users`) for each `homeserver` name per day, instead of an arbitrary one ([#39](https://github.com/matrix-org/panopticon/pull/39))
 
 Internal changes
 ----------------
