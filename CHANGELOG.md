@@ -3,7 +3,7 @@ Panopticon *(upcoming version)* (xxxx-xx-xx)
 
 Bug fixes
 ---------
-- Aggregate stats now count each reporting address separately, so several deployments reporting under the same server name no longer clobber each other ([#TODO](TODO))
+- Aggregate stats now count each reporting address separately, so several deployments reporting under the same server name no longer clobber each other ([#38](https://github.com/matrix-org/panopticon/pull/38))
 
 Internal changes
 ----------------
