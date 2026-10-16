@@ -1,6 +1,7 @@
 from typing import Dict, Optional
 from unittest import TestCase
 
+from pymysql import Connection
 from pymysql.cursors import Cursor
 
 from aggregate import Config
@@ -67,8 +68,7 @@ def select_aggregate(cursor: Cursor, day: int) -> Optional[Dict[str, int]]:
 
 
 class AggregateTestCase(TestCase):
-    def setUp(self) -> None:
-        self.config = Config()
+    def connect_db(self) -> Connection:
         db = self.config.connect_db()
         # Close the connection after the test is done
         self.addCleanup(db.close)
@@ -78,6 +78,12 @@ class AggregateTestCase(TestCase):
             # tables (MariaDB's default `lock_wait_timeout` is 86400s, one day).
             cursor.execute("SET SESSION lock_wait_timeout = 10;")
 
+        return db
+
+    def setUp(self) -> None:
+        self.config = Config()
+        db = self.connect_db()
+        with db.cursor() as cursor:
             cursor.execute("DROP TABLE IF EXISTS aggregate_stats;")
 
             for stats_table in ("stats", "dendrite_stats"):
@@ -106,7 +112,7 @@ class AggregateTestCase(TestCase):
         Tests that the aggregator reports the sum of metrics.
         """
 
-        db = self.config.connect_db()
+        db = self.connect_db()
         with db.cursor() as cursor:
             insert_recording(
                 cursor,
@@ -141,7 +147,7 @@ class AggregateTestCase(TestCase):
         standby backup servers).
         """
 
-        db = self.config.connect_db()
+        db = self.connect_db()
         with db.cursor() as cursor:
             insert_recording(
                 cursor,
