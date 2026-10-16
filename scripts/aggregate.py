@@ -180,12 +180,12 @@ def aggregate_until_today(db: Connection, today: int):
                         ORDER BY monthly_active_users DESC, local_timestamp DESC
                     ) AS rank_in_day
                     FROM (
-                        SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
+                        SELECT {QUERY_COLUMNS}, local_timestamp
                         FROM stats
                         WHERE local_timestamp >= %s and local_timestamp < %s
                         AND total_users > 0
                         UNION ALL
-                        SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
+                        SELECT {QUERY_COLUMNS}, local_timestamp
                         FROM dendrite_stats
                         WHERE local_timestamp >= %s and local_timestamp < %s
                         AND total_users > 0
