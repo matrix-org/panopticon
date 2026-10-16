@@ -70,7 +70,14 @@ class AggregateTestCase(TestCase):
     def setUp(self) -> None:
         self.config = Config()
         db = self.config.connect_db()
+        # Close the connection after the test is done
+        self.addCleanup(db.close)
+
         with db.cursor() as cursor:
+            # Fail fast instead of hanging if something still holds a lock on these
+            # tables (MariaDB's default `lock_wait_timeout` is 86400s, one day).
+            cursor.execute("SET SESSION lock_wait_timeout = 10;")
+
             cursor.execute("DROP TABLE IF EXISTS aggregate_stats;")
 
             for stats_table in ("stats", "dendrite_stats"):
