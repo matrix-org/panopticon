@@ -142,6 +142,11 @@ def aggregate_until_today(db: Connection, today: int):
             # under report. Filtering on total_users removes the standbys.
             # It also filters out genuinely unused servers, but the value of
             # aggregating these servers is limited.
+            #
+            # Several deployments can report under the same server name (e.g. a
+            # near-idle standby next to the live server, or a stranger reusing
+            # the name). For each server name, we only count its biggest report
+            # of the day (by `monthly_active_users`).
             query = f"""
                 SELECT
                     SUM(total_users) as 'total_users',
@@ -170,18 +175,23 @@ def aggregate_until_today(db: Connection, today: int):
                     SUM(daily_user_type_guest) as 'daily_user_type_guest',
                     COUNT(homeserver) as 'homeserver'
                 FROM (
-                    SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
-                    FROM stats
-                    WHERE local_timestamp >= %s and local_timestamp < %s
-                    AND total_users > 0
-                    GROUP BY homeserver
-                    UNION
-                    SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
-                    FROM dendrite_stats
-                    WHERE local_timestamp >= %s and local_timestamp < %s
-                    AND total_users > 0
-                    GROUP BY homeserver
-                ) as s;
+                    SELECT *, ROW_NUMBER() OVER (
+                        PARTITION BY homeserver
+                        ORDER BY monthly_active_users DESC, local_timestamp DESC
+                    ) AS rank_in_day
+                    FROM (
+                        SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
+                        FROM stats
+                        WHERE local_timestamp >= %s and local_timestamp < %s
+                        AND total_users > 0
+                        UNION ALL
+                        SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
+                        FROM dendrite_stats
+                        WHERE local_timestamp >= %s and local_timestamp < %s
+                        AND total_users > 0
+                    ) as reports
+                ) as ranked
+                WHERE rank_in_day = 1;
             """
 
             date_range = (
