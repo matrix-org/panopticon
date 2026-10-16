@@ -15,7 +15,9 @@ def insert_recording(
     homeserver: str,
     timestamp: int,
     metrics: Dict[str, int],
+    *,
     remote_addr: str = "192.42.42.42",
+    forwarded_for: Optional[str] = None,
     table: str = "stats",
 ):
     """
@@ -35,7 +37,14 @@ def insert_recording(
             user_agent = %s,
             {metric_set_lines};
         """,
-        (homeserver, timestamp, timestamp, remote_addr, remote_addr, "FakeStats/42.x.y")
+        (
+            homeserver,
+            timestamp,
+            timestamp,
+            remote_addr,
+            forwarded_for,
+            "FakeStats/42.x.y",
+        )
         + tuple(metrics.values()),
     )
 
@@ -157,5 +166,106 @@ class AggregateTestCase(TestCase):
         with db.cursor() as cursor:
             row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
             self.assertIsNot(row, None)
+            self.assertEqual(row["total_users"], 1)
+            self.assertEqual(row["daily_active_homeservers"], 1)
+
+    def test_same_homeserver_from_different_addresses_counted_separately(self):
+        """
+        Tests that reports claiming to be the same `homeserver` name *but* coming from
+        different `remote_addr` are counted separately.
+        """
+        db = self.config.connect_db()
+        with db.cursor() as cursor:
+            insert_recording(
+                cursor,
+                # Both recordings have the same `homeserver`
+                "hs1",
+                INITIAL_DAY + ONE_DAY + 300,
+                {metric: 1 for metric in METRIC_COLUMNS},
+                # But come from different people
+                remote_addr="10.0.0.1",
+                forwarded_for=None,
+            )
+            insert_recording(
+                cursor,
+                "hs1",
+                INITIAL_DAY + ONE_DAY + 600,
+                {metric: 3 for metric in METRIC_COLUMNS},
+                remote_addr="10.0.0.2",
+                forwarded_for=None,
+            )
+        aggregate_until_today(db, today=INITIAL_DAY + 2 * ONE_DAY)
+        with db.cursor() as cursor:
+            row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
+            self.assertIsNot(row, None)
+            self.assertEqual(row["total_users"], 4)
+            self.assertEqual(row["daily_active_homeservers"], 2)
+
+    def test_same_homeserver_from_different_addresses_behind_proxy_counted_separately(
+        self,
+    ):
+        """
+        Tests that reports claiming to be the same `homeserver` name *but* coming from
+        different addresses (according to the `X-Forwarded-For` header) are counted
+        separately.
+
+        This mimicks what happens when you run behind a reverse-proxy.
+        """
+        db = self.config.connect_db()
+        with db.cursor() as cursor:
+            insert_recording(
+                cursor,
+                # Both recordings have the same `homeserver`
+                "hs1",
+                INITIAL_DAY + ONE_DAY + 300,
+                {metric: 1 for metric in METRIC_COLUMNS},
+                # Same `remote_addr` as both come from the reverse-proxy (ephemeral port
+                # is different)
+                remote_addr="192.42.42.42:40000",
+                # But come from different people according to the `X-Forwarded-For`
+                # header
+                forwarded_for="10.0.0.1",
+            )
+            insert_recording(
+                cursor,
+                "hs1",
+                INITIAL_DAY + ONE_DAY + 600,
+                {metric: 3 for metric in METRIC_COLUMNS},
+                remote_addr="192.42.42.42:50000",
+                forwarded_for="10.0.0.2",
+            )
+        aggregate_until_today(db, today=INITIAL_DAY + 2 * ONE_DAY)
+        with db.cursor() as cursor:
+            row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
+            self.assertIsNot(row, None)
+            # Expect to see each
+            self.assertEqual(row["total_users"], 4)
+            self.assertEqual(row["daily_active_homeservers"], 2)
+
+    def test_same_address_on_different_ports_counted_once(self):
+        """
+        Tests that reports from the same `remote_addr` are counted once, even though
+        each request comes from a different (ephemeral) source port.
+
+        This is mimicking what you would when using the Docker container and requests
+        come over the Docker bridge gateway. Each phone home request gets a new randomly
+        assigned ephemeral source port.
+        """
+        db = self.config.connect_db()
+        with db.cursor() as cursor:
+            for port in (40000, 40001, 40002):
+                insert_recording(
+                    cursor,
+                    "hs1",
+                    INITIAL_DAY + ONE_DAY + port - 39000,
+                    {metric: 1 for metric in METRIC_COLUMNS},
+                    remote_addr=f"172.17.0.1:{port}",
+                    forwarded_for=None,
+                )
+        aggregate_until_today(db, today=INITIAL_DAY + 2 * ONE_DAY)
+        with db.cursor() as cursor:
+            row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
+            self.assertIsNot(row, None)
+            # We expect to see the stats from *one* of the recordings
             self.assertEqual(row["total_users"], 1)
             self.assertEqual(row["daily_active_homeservers"], 1)

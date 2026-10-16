@@ -43,6 +43,15 @@ METRIC_COLUMNS = (
 )
 QUERY_COLUMNS = ",".join(METRIC_COLUMNS + ("homeserver",))
 
+# Anyone can report stats under any `homeserver` name, so the same name can come from
+# several unrelated deployments (e.g. a near-idle standby next to the live server, or a
+# stranger reusing the name). We count each reporting source separately, identified by
+# its address: `remote_addr` (minus the ephemeral source port, which changes on every
+# request) and `X-Forwarded-For`.
+GROUP_BY_HOMESERVER_SOURCE = (
+    "homeserver, REGEXP_REPLACE(remote_addr, ':[0-9]+$', ''), forwarded_for"
+)
+
 
 class Config:
     def __init__(self):
@@ -174,13 +183,13 @@ def aggregate_until_today(db: Connection, today: int):
                     FROM stats
                     WHERE local_timestamp >= %s and local_timestamp < %s
                     AND total_users > 0
-                    GROUP BY homeserver
-                    UNION
+                    GROUP BY {GROUP_BY_HOMESERVER_SOURCE}
+                    UNION ALL
                     SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
                     FROM dendrite_stats
                     WHERE local_timestamp >= %s and local_timestamp < %s
                     AND total_users > 0
-                    GROUP BY homeserver
+                    GROUP BY {GROUP_BY_HOMESERVER_SOURCE}
                 ) as s;
             """
 
