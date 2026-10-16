@@ -1,4 +1,4 @@
-FROM golang:1.18
+FROM golang:1.26-trixie
 
 RUN apt-get -yq update && apt-get -yq install sqlite3 && apt-get -yq clean
 WORKDIR /go/src/panopticon
@@ -11,7 +11,7 @@ COPY ./go.sum /go/src/panopticon
 RUN go build
 RUN ./runtests.sh
 
-FROM debian
+FROM debian:trixie-slim
 
 WORKDIR /root/
 COPY --from=0 /go/src/panopticon/panopticon .

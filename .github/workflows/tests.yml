@@ -8,14 +8,16 @@ jobs:
     name: Unit tests (Panopticon)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Use the Go version from `go.mod`
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '1.13.1'
-      - run: sudo apt-get update && sudo apt-get install sqlite3 && sudo apt-get clean
-      - run: go get github.com/mattn/go-sqlite3
-      - run: go get github.com/go-sql-driver/mysql
+          go-version-file: go.mod
+      # Install some pre-requisites
+      - run: sudo apt-get update && sudo apt-get install -y sqlite3 && sudo apt-get clean
+      # Build the project
       - run: go build
+      # Run tests
       - run: ./runtests.sh
 
   run-unit-tests-aggregate:
@@ -33,8 +35,10 @@ jobs:
     name: Unit tests (Aggregate)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: sudo apt-get update && sudo apt-get install python3-pip python3 && sudo apt-get clean
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
       - run: pip install green -r requirements.txt
       - run: >
           cd scripts &&

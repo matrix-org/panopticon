@@ -1,3 +1,14 @@
+Panopticon *(upcoming version)* (xxxx-xx-xx)
+=============================
+
+Internal changes
+----------------
+
+- Dockerfiles are now using Python 3.12 and Go 1.26
+- Pin our GitHub Actions dependencies
+- Update `runtests.sh` to actually exit with error code `1` when tests fail
+
+
 Panopticon 0.3.0 (2022-05-05)
 =============================
 

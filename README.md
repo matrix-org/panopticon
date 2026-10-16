@@ -3,13 +3,8 @@
 panopticon records usage metrics from homeservers
 
 ## Building
-To build panopticon, you need a working go installation.
-To install dependencies, run:
 
-```sh
-go get github.com/mattn/go-sqlite3
-go get github.com/go-sql-driver/mysql
-```
+Tested with Python 3.12 and Go 1.26
 
 To build, run:
 
@@ -18,7 +13,7 @@ go build
 ```
 
 ## Testing
-There is a second `Dockerfile-testing` that builds panopticon to run the tests as above, as we probably want locally.
+There is a second `Dockerfile-tests` that builds panopticon to run the tests as above, as we probably want locally.
 
 This only requires docker on your local workstation, no go install or dependencies required.
 
