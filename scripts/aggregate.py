@@ -170,7 +170,7 @@ def aggregate_until_today(db: Connection, today: int):
                     SUM(daily_user_type_guest) as 'daily_user_type_guest',
                     COUNT(homeserver) as 'homeserver'
                 FROM (
-                    SELECT {QUERY_COLUMNS}, MAX(asdf)
+                    SELECT {QUERY_COLUMNS}, MAX(local_timestamp)
                     FROM stats
                     WHERE local_timestamp >= %s and local_timestamp < %s
                     AND total_users > 0
