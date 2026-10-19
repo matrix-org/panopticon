@@ -172,3 +172,36 @@ class AggregateTestCase(TestCase):
             self.assertIsNot(row, None)
             self.assertEqual(row["total_users"], 1)
             self.assertEqual(row["daily_active_homeservers"], 1)
+
+    def test_biggest_report_per_homeserver_is_counted(self):
+        """
+        Tests that when several reports claim the same `homeserver` name in a day (e.g.
+        a near-idle standby next to the live server, or a stranger reusing the name),
+        only the biggest one (by `monthly_active_users`) is counted.
+        """
+        big_metrics = dict(
+            {metric: 5 for metric in METRIC_COLUMNS}, monthly_active_users=1000
+        )
+        small_metrics = dict(
+            {metric: 1 for metric in METRIC_COLUMNS}, monthly_active_users=3
+        )
+        db = self.config.connect_db()
+        with db.cursor() as cursor:
+            # For each homeserver, report once with big metrics, and then with
+            # small metrics
+            #
+            # hs1: the big report arrives first
+            insert_recording(cursor, "hs1", INITIAL_DAY + ONE_DAY + 300, big_metrics)
+            insert_recording(cursor, "hs1", INITIAL_DAY + ONE_DAY + 600, small_metrics)
+            # hs2: the big report arrives last
+            insert_recording(cursor, "hs2", INITIAL_DAY + ONE_DAY + 300, small_metrics)
+            insert_recording(cursor, "hs2", INITIAL_DAY + ONE_DAY + 600, big_metrics)
+        aggregate_until_today(db, today=INITIAL_DAY + 2 * ONE_DAY)
+        with db.cursor() as cursor:
+            row = select_aggregate(cursor, INITIAL_DAY + ONE_DAY)
+            self.assertIsNot(row, None)
+            # The aggregated metrics for each homeserver come from the biggest report
+            # for the day
+            self.assertEqual(row["monthly_active_users"], 2000)
+            self.assertEqual(row["total_users"], 10)
+            self.assertEqual(row["daily_active_homeservers"], 2)
