@@ -10,4 +10,4 @@
 8. With any luck, *GitHub Actions* will spring into action, building the Docker images and pushing them to [Docker Hub](https://hub.docker.com/r/matrixdotorg/panopticon/tags?page=1&ordering=last_updated).
 
 
-[Private, infrastructure-specific, instructions](https://gitlab.matrix.org/new-vector/internal/-/wikis/Panopticon) are available to internal members for deploying the 'official' deployment of Panopticon.
+[Private, infrastructure-specific, instructions](https://handbook.element.io/books/backend-team/page/panopticon) are available to internal members for deploying the 'official' deployment of Panopticon.
