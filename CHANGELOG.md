@@ -1,4 +1,4 @@
-Panopticon *(upcoming version)* (xxxx-xx-xx)
+Panopticon 0.4.0 (2026-10-20)
 =============================
 
 Bug fixes
