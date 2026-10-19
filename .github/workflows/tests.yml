@@ -21,6 +21,10 @@ jobs:
       - run: ./runtests.sh
 
   run-unit-tests-aggregate:
+    # We expect these tests to complete in less than a minute so anything spending an
+    # order of magnitude longer is just wasting CI time
+    timeout-minutes: 10
+
     services:
       mariadb:
         image: mariadb:latest
