@@ -185,7 +185,7 @@ class AggregateTestCase(TestCase):
         small_metrics = dict(
             {metric: 1 for metric in METRIC_COLUMNS}, monthly_active_users=3
         )
-        db = self.config.connect_db()
+        db = self.connect_db()
         with db.cursor() as cursor:
             # For each homeserver, report once with big metrics, and then with
             # small metrics
